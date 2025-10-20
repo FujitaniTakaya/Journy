@@ -126,25 +126,20 @@ bool Player::IsStick(const Vector2& stick) {
 
 
 void Player::Move() {
+	//x,zの移動速度を初期化
+	m_moveSpeed.x = 0.0f;
+	m_moveSpeed.z = 0.0f;
+	
+	
 	//左スティックの入力量を取得
 	Vector2 stickL;
 	stickL.x = g_pad[0]->GetLStickXF();
 	stickL.y = g_pad[0]->GetLStickYF();
 
+	//スティックの入力がなければ下の処理をしない
 	if (!IsStick(stickL)) {
 		return;
 	}
-
-	////スティックの入力量が0だったら以下の処理をしない
-	//for (int i = 0; i < 2; i++) {
-	//	stickL.v[i] == 0.0f;
-	//	return;
-	//}
-
-
-	//x,zの移動速度を0.0fにする
-	m_moveSpeed.x = 0.0f;
-	m_moveSpeed.z = 0.0f;
 	
 
 	Vector3 forward = g_camera3D->GetForward();
