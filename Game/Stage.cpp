@@ -20,8 +20,6 @@ void Stage::SetStage() {
 	m_stageModelRender->SetPosition(Vector3::Zero);
 
 	ModelRender* model = m_stageModelRender;
-
-
 	m_stagePhysics.CreateFromModel(model->GetModel(), model->GetModel().GetWorldMatrix());
 
 	//“–‚½‚è”»’è‚Ì‰ÂŽ‹‰»
