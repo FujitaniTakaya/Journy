@@ -28,13 +28,13 @@ namespace {
 	Vector2 CHARA_CON = { 25.0f, 75.0f };
 
 
-	float MOVE_SPEED[Player::EnPlayerMoveState::enPlayerMoveState_Num] = {
+	float MOVE_SPEED[Player::enPlayerMoveState_Num] = {
 		200.0f, 400.0f
 	};
 
 	float CAN_NEXT_JUMP_FRAME = 0.2f;					//次の段のジャンプに切り替えれるまでの猶予時間
 
-	float JUMP_POWER[enJumpPower_Num] = {				//ジャンプパワーの配列
+	float JUMP_POWER[Player::enJumpPower_Num] = {				//ジャンプパワーの配列
 		200.0f, 220.0f, 300.0f
 	};
 

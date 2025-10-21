@@ -2,8 +2,9 @@
 
 //#include "Level3DRender/LevelRender.h"
 
-class Player;
 class Stage;
+class Player;
+class GameCamera;
 class Enemy;
 
 class Game : public IGameObject
@@ -16,6 +17,7 @@ public:
 private:
 	Stage* m_stage = nullptr;
 	Player* m_player = nullptr;
+	GameCamera* m_gameCamera = nullptr;
 	Enemy* m_enemy = nullptr;
 };
 

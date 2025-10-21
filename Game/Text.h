@@ -10,10 +10,3 @@ enum EnPlayerState {
 };
 
 
-enum EnJumpPower {
-	enJumpPower_First,
-	enJumpPower_Second,
-	enJumpPower_Third,
-	enJumpPower_Num
-
-};

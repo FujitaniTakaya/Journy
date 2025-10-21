@@ -36,13 +36,23 @@ public:
 		enPlayerMoveState_Num
 	};
 
+	enum EnJumpPower {
+		enJumpPower_First,
+		enJumpPower_Second,
+		enJumpPower_Third,
+		enJumpPower_Num
+	};
+
 private:
 	ModelRender* m_playerModelRender = nullptr;
 	AnimationClip m_playerAnimClips[enPlayerState_Num];
 	CharacterController m_playerCharaCon;
 
 
+public:
 	Vector3 m_position = Vector3::Zero;
+	
+private:
 	Vector3 m_moveSpeed = Vector3::Zero;
 	int m_moveState = enPlayerMoveState_Walk;
 	Quaternion m_rotation = Quaternion::Identity;
