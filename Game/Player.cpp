@@ -28,8 +28,9 @@ namespace {
 	Vector2 CHARA_CON = { 25.0f, 75.0f };
 
 
-	float WALK_SPEED = 200.0f;							//歩くスピード
-	float DASH_SPEED = WALK_SPEED * 2;					//走るスピード
+	float MOVE_SPEED[Player::EnPlayerMoveState::enPlayerMoveState_Num] = {
+		200.0f, 400.0f
+	};
 
 	float CAN_NEXT_JUMP_FRAME = 0.1f;					//次の段のジャンプに切り替えれるまでの猶予時間
 
@@ -57,6 +58,7 @@ void Player::Update() {
 	Move();
 	Jump();
 	ManagePlayerState();
+	CharaMove();
 	m_playerModelRender->Update();
 }
 
@@ -83,12 +85,10 @@ void Player::SetPlayerModel() {
 
 	m_playerModelRender = new ModelRender;
 	m_playerModelRender->Init(UNITY_MODEL, m_playerAnimClips, enPlayerState_Num, enModelUpAxisY);
-
-	m_playerCharaCon.Init(CHARA_CON.x, CHARA_CON.y, m_position);
-
 	m_playerModelRender->SetPosition(Vector3::Zero);
-
 	m_playerModelRender->Update();
+	m_playerCharaCon.Init(CHARA_CON.x, CHARA_CON.y, m_position);
+	
 }
 
 
@@ -148,16 +148,14 @@ void Player::Move() {
 	forward.y = 0.0f;
 	right.y = 0.0f;
 
-	right *= stickL.x * WALK_SPEED;
-	forward *= stickL.y * WALK_SPEED;
+
+	right *= stickL.x * MOVE_SPEED[m_moveState];
+	forward *= stickL.y * MOVE_SPEED[m_moveState];
 
 	m_moveSpeed += right + forward;
 
 
 	Rotate();
-
-	m_position = m_playerCharaCon.Execute(m_moveSpeed, ONE_FRAME);
-	m_playerModelRender->SetPosition(m_position);	
 }
 
 
@@ -165,12 +163,14 @@ void Player::Move() {
 //そのステートに当てはまるアニメーションを再生する
 void Player::ManagePlayerState() {
 	m_playerState = enPlayerState_Idle;
-
+	
 	if (IsMove()) {
 		m_playerState = enPlayerState_Walk;
+		m_moveState = enPlayerMoveState_Walk;
 	}
 	if (IsRun()) {
 		m_playerState = enPlayerState_Run;
+		m_moveState = enPlayerMoveState_Run;
 	}
 	if (!m_playerCharaCon.IsOnGround()) {
 		m_playerState = enPlayerState_Jump;
@@ -189,7 +189,7 @@ void Player::Rotate() {
 
 //重力を返す
 float Player::Gravity() {
-	m_flyingTime += g_gameTime->GetFrameDeltaTime();
+	m_flyingTime += ONE_FRAME;
 	return GRAVITY * m_flyingTime;
 }
 
@@ -212,6 +212,7 @@ bool Player::CanJump() {
 //規定時間たったかどうかを判定
 bool Player::MeasureNextJumpFrameCount() {
 	if (m_standingTime <= CAN_NEXT_JUMP_FRAME) {
+		m_standingTime += ONE_FRAME;
 		return false;
 	}
 	//タイマーをリセット
@@ -243,21 +244,33 @@ bool Player::CanNextJump() {
 
 
 void Player::Jump() {
-	//ジャンプできるか判定
 	if (!CanJump()) {
 		return;
 	}
-
-	if (m_jumpState != enJumpPower_Third) {
-		if (!CanNextJump()) {
+	if (m_canNextJump) {
+		if (MeasureNextJumpFrameCount()) {
+			m_jumpState = enJumpPower_First;
+			m_canNextJump = false;
 			return;
 		}
 	}
-
-	//Bボタンが押されているか判定
 	if (!g_pad[0]->IsTrigger(enButtonB)) {
 		return;
-	}	
+	}
 	m_moveSpeed.y += JUMP_POWER[m_jumpState];
 	m_jumpState = static_cast<EnJumpPower>((m_jumpState + 1) % enJumpPower_Num);
+	m_canNextJump = true;
+	if (!(m_jumpState == enJumpPower_First)) {
+		return;
+	}
+	m_canNextJump = false;
+}
+
+
+void Player::CharaMove() {
+	if (!IsMove()) {
+		return;
+	}
+	m_position = m_playerCharaCon.Execute(m_moveSpeed, ONE_FRAME);
+	m_playerModelRender->SetPosition(m_position);
 }
