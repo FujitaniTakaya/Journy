@@ -10,22 +10,31 @@ protected:
 
 	void Render(RenderContext& rc)override;
 
-	void SetEnemyModel(int enemyNum);
-	bool IsModel(ModelRender* model);
+	void SetEnemyModel(const int enemyNum);
+	bool IsModel(const ModelRender* model);
 
 
 	//エネミーをランダムに動かす
 	void RandomWalk();
-	void RandomWait(bool& moveFlag);
+	void RandomWait(std::atomic<bool>& waitFlag);
 
 	//目的地の方向を向いているかどうか
 	bool IsRotateMovePos();
 	//目的地にいるかどうか
-	bool IsBeingMovePos();
+	bool IsBeingMovePos()const;
 	//次の目的地を決める
 	void DecideToMovePos();
 
-	
+
+private:
+/// <summary>
+/// /ゲッター
+/// </summary>
+	bool IsWait()const;
+
+private:
+	//待機時間のタイマーをスタートする
+	void StartWaitTime(std::atomic<bool>& waitFlag);
 
 public:
 	enum EnEnemy {
@@ -36,7 +45,7 @@ public:
 	};
 
 private:
-	bool m_isEndWaitTime = true;
+	std::atomic<bool> m_isWait = true;
 
 protected:
 	ModelRender* m_enemyModelRender = nullptr;
