@@ -12,7 +12,7 @@ namespace {
 		std::string fileName;
 
 		//ファイルパスを取得
-		std::string GetFullPath()const {
+		std::string GetModelFullPath()const {
 			return PLAYER_FILEPATH + fileName + PLAYER_EXTENSTION;
 		}
 	};
@@ -23,24 +23,26 @@ namespace {
 	};
 	const char* UNITY_MODEL = "Assets/modelData/unityChan.tkm";
 
-	float ONE_FRAME = 1.0f / 60.0f;
-
 	Vector2 CHARA_CON = { 25.0f, 75.0f };
 
 
-	float MOVE_SPEED[Player::enPlayerMoveState_Num] = {
+	namespace MoveInfo {
+		float MOVE_SPEED[Player::enPlayerMoveState_Num] = {
 		200.0f, 400.0f
-	};
+		};
 
-	float CAN_NEXT_JUMP_FRAME = 0.2f;					//次の段のジャンプに切り替えれるまでの猶予時間
+		float CAN_NEXT_JUMP_FRAME = 0.2f;					//次の段のジャンプに切り替えれるまでの猶予時間
 
-	float JUMP_POWER[Player::enJumpPower_Num] = {				//ジャンプパワーの配列
-		200.0f, 220.0f, 300.0f
-	};
+		float JUMP_POWER[Player::enJumpPower_Num] = {				//ジャンプパワーの配列
+			200.0f, 220.0f, 300.0f
+		};
 
 
-	float MAX_FLYING_TIME = 0.5f;						//重力加速の最大フレーム数
-	float GRAVITY = -9.8f;								//重力加速度
+		float MAX_FLYING_TIME = 0.5f;						//重力加速の最大フレーム数
+		float GRAVITY = -9.8f;								//重力加速度
+	}
+
+	
 
 }
 
@@ -73,7 +75,7 @@ void Player::Render(RenderContext& rc) {
 
 void Player::SetPlayerModel() {
 	for (int i = 0; i < enPlayerState_Num; i++) {
-		m_playerAnimClips[i].Load(PlayerInfo[i].GetFullPath().c_str());
+		m_playerAnimClips[i].Load(PlayerInfo[i].GetModelFullPath().c_str());
 		if (i != enPlayerState_Jump) {
 			m_playerAnimClips[i].SetLoopFlag(true);
 			continue;
@@ -140,7 +142,6 @@ void Player::Move() {
 	if (!IsStick(stickL)) {
 		return;
 	}
-	
 
 	Vector3 forward = g_camera3D->GetForward();
 	Vector3 right = g_camera3D->GetRight();
@@ -148,12 +149,11 @@ void Player::Move() {
 	forward.y = 0.0f;
 	right.y = 0.0f;
 
+	float speed = MoveInfo::MOVE_SPEED[m_moveState];
 
-	right *= stickL.x * MOVE_SPEED[m_moveState];
-	forward *= stickL.y * MOVE_SPEED[m_moveState];
-
+	right *= stickL.x * speed;
+	forward *= stickL.y * speed;
 	m_moveSpeed += right + forward;
-
 
 	Rotate();
 }
@@ -190,7 +190,7 @@ void Player::Rotate() {
 //重力を返す
 float Player::Gravity() {
 	m_flyingTime += ONE_FRAME;
-	return GRAVITY * m_flyingTime;
+	return MoveInfo::GRAVITY * m_flyingTime;
 }
 
 
@@ -211,7 +211,7 @@ bool Player::CanJump() {
 
 //規定時間たったかどうかを判定
 bool Player::MeasureNextJumpFrameCount() {
-	if (m_standingTime <= CAN_NEXT_JUMP_FRAME) {
+	if (m_standingTime <= MoveInfo::CAN_NEXT_JUMP_FRAME) {
 		m_standingTime += ONE_FRAME;
 		return false;
 	}
@@ -257,7 +257,9 @@ void Player::Jump() {
 	if (!g_pad[0]->IsTrigger(enButtonB)) {
 		return;
 	}
-	m_moveSpeed.y += JUMP_POWER[m_jumpState];
+	float jumpPower = MoveInfo::JUMP_POWER[m_jumpState];
+	m_moveSpeed.y += jumpPower;
+
 	m_jumpState = static_cast<EnJumpPower>((m_jumpState + 1) % enJumpPower_Num);
 	m_canNextJump = true;
 	if (!(m_jumpState == enJumpPower_First)) {
