@@ -34,7 +34,7 @@ namespace {
 		float CAN_NEXT_JUMP_FRAME = 0.2f;					//次の段のジャンプに切り替えれるまでの猶予時間
 
 		float JUMP_POWER[Player::enJumpPower_Num] = {				//ジャンプパワーの配列
-			200.0f, 220.0f, 300.0f
+			200.0f, 400.0f, 600.0f
 		};
 
 
@@ -189,7 +189,7 @@ void Player::Rotate() {
 
 //重力を返す
 float Player::Gravity() {
-	m_flyingTime += ONE_FRAME;
+	m_flyingTime += ONE_FRAME * 5.0f;
 	return MoveInfo::GRAVITY * m_flyingTime;
 }
 

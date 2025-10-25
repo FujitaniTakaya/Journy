@@ -32,7 +32,7 @@ void GameCamera::Update() {
 
 	Vector3 toCameraPosOld = m_toCameraPos;
 
-	Vector2 stickR = { Vector2::Zero };
+	Vector2 stickR = Vector2::Zero;
 	stickR.x = g_pad[0]->GetRStickXF();
 	stickR.y = g_pad[0]->GetRStickYF();
 
@@ -42,7 +42,7 @@ void GameCamera::Update() {
 	qRot.Apply(m_toCameraPos);
 
 	//XŽ²Žü‚è‚Ì‰ñ“]
-	Vector3 axisX = { Vector3::Zero };
+	Vector3 axisX = Vector3::Zero;
 	axisX.Cross(Vector3::AxisY, m_toCameraPos);
 	axisX.Normalize();
 	qRot.SetRotationDeg(axisX, 2.0f * stickR.y);
