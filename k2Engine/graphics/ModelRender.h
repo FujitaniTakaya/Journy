@@ -89,6 +89,7 @@ namespace nsK2Engine {
 		/// <param name="rot">‰ñ“]</param>
 		/// <param name="scale">Šg‘å—¦</param>
 		void UpdateInstancingData(int instanceNo, const Vector3& pos, const Quaternion& rot, const Vector3& scale);
+		void UpdateInstancingData(const Vector3& pos, const Quaternion& rot, const Vector3& scale);
 		/// <summary>
 		/// •`‰æˆ—B
 		/// </summary>

@@ -51,6 +51,8 @@ namespace nsK2EngineLow {
 			return m_instance;
 		}
 	public:
+		enum { GAME_OBJECT_PRIO_MAX_DEBUG = 255 };		//!<ゲームオブジェクトの優先度の最大値。
+
 		/// <summary>
 		/// 更新処理を実行
 		/// </summary>
