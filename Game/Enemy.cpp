@@ -27,7 +27,7 @@ namespace {
 		}
 	};
 
-	const EnemyInfo EnemiesModel[Enemy::enEnemy_Num] = {
+	const EnemyInfo EnemiesModel[static_cast<int>(Enemy::EnEnemy::enEnemy_Num)] = {
 		{"normalEnemy/", "NormalEnemy", {3.0f, 3.0f, 3.5f}, {25.0f, 20.0f}},
 		{ "gimmickEnemy/","GimmickEnemy", {2.8f, 2.0f, 2.8f}, {25.0f, 30.0f}},
 		{ "bossEnemy/","BossEnemy" , {1.0f, 1.2f, 1.0f}, {50.0f, 45.0f}}
@@ -39,17 +39,20 @@ namespace {
 
 //ノーマルエネミーの初期化
 bool Normal::Start() {
-	SetEnemyModel(enEnemy_Normal);
+	SetEnemyModel(static_cast<int>(EnEnemy::enEnemy_Normal));
 	if (!IsModel(m_enemyModelRender)) {
 		return false;
 	}
+
+	
+
 	return true;
 }
 
 
 //ギミックエネミーの初期化
 bool Gimmick::Start() {
-	SetEnemyModel(enEnemy_Gimmick);
+	SetEnemyModel(static_cast<int>(EnEnemy::enEnemy_Gimmick));
 	if (!IsModel(m_enemyModelRender)) {
 		return false;
 	}
@@ -59,7 +62,7 @@ bool Gimmick::Start() {
 
 //ボスエネミーの初期化
 bool Boss::Start() {
-	SetEnemyModel(enEnemy_Boss);
+	SetEnemyModel(static_cast<int>(EnEnemy::enEnemy_Boss));
 	if (!IsModel(m_enemyModelRender)) {
 		return false;
 	}
@@ -68,7 +71,27 @@ bool Boss::Start() {
 
 
 void Enemy::Update() {
+	if (!IsStart()) {
+		return;
+	}
 	RandomWalk();
+
+	Vector3 front = Vector3::AxisZ;
+
+	m_enemyRotate.Apply(front);
+	/*front.x = 1.0f;
+	front.y = 1.0f;*/
+	//front.z = m_enemyRotate.z * 1;
+	front.Normalize();
+	front *= 200.0f;
+	Vector3 origin = m_enemyPos;
+	origin.y += 80.0f;
+	g_k2Engine->DrawVector(front, origin);
+	g_k2Engine->DrawVector(Vector3::AxisY*50.0f, Vector3::Zero);
+
+	
+	g_k2Engine->SetDrawVectorEnable();
+
 }
 
 
@@ -90,23 +113,23 @@ void Enemy::UpdateEnemyPos() {
 
 //エネミーのモデルを初期化する
 void Enemy::SetEnemyModel(const int enemyNum) {
-	
-
 	//メンバ変数へ代入
 	ModelRender* model = new ModelRender;
 	std::string filePath = EnemiesModel[enemyNum].GetModelFullPath();
 	Vector3 scale = EnemiesModel[enemyNum].modelScale;
 	Vector2 collisionScl = EnemiesModel[enemyNum].charConScale;	
-
+	float rot = 0.0f;
+	rot = rand() % 360;
+	m_enemyRotate.SetRotationDegY(rot);
 	//モデルとコリジョンを初期化
 	model->Init(filePath.c_str());
+	model->SetTRS(m_enemyPos, m_enemyRotate, scale);
 	model->SetScale(scale);
 	model->SetPosition(m_enemyPos);
 
-	float rotation = rand() % 360;
-
+	//float rotation = rand() % 360;
 	//m_enemyRotate.SetRotationDegY(rotation);
-	model->SetRotation(m_enemyRotate);
+	//model->SetRotation(m_enemyRotate);
 	
 	m_enemyModelRender = model;
 	m_enemyModelRender->Update();
@@ -124,18 +147,18 @@ bool Enemy::IsModel(const ModelRender* model) {
 
 
 
+
+
 void Enemy::StartWaitTime(std::atomic<bool>& waitFlag) {
 	waitFlag = true;
 }
 
 
 void Enemy::DecideToMovePos() {
-	m_toMovePos.x = rand() % 401 - 100;
-	m_toMovePos.z = rand() % 401 - 100;
+	m_toMovePos.x = rand() % 401 - 200;
+	m_toMovePos.z = rand() % 401 - 200;
 	m_toMovePos += m_firstEnemyPos;
 	m_toMovePos.y = 0.0f;
-
-	
 }
 
 
@@ -151,6 +174,7 @@ bool Enemy::IsBeingMovePos()const {
 
 
 bool Enemy::IsRotateMovePos() {
+	
 	return true;
 }
 
@@ -167,7 +191,8 @@ void Enemy::RandomWalk() {
 		//std::thread waitThread(RandomWait, canMove);
 		waitThread.detach();
 	}
-	
+
+	//待機中だったら
 	if (IsWait()) {
 		return;
 	}
@@ -184,19 +209,31 @@ void Enemy::RandomWalk() {
 }
 
 
-bool Enemy::IsWait()const {
-	return m_isWait;
-}
-
-
 void Enemy::RandomWait(std::atomic<bool>& waitFlag) {
 	static std::mt19937 rang(std::random_device{}());
-	std::uniform_int_distribution<int> dist(300, 3299);	
+	std::uniform_int_distribution<int> dist(300, 3299);
 
 	int waitTime = dist(rang);
 	std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
 	waitFlag = false;
 }
+
+
+const bool Enemy::IsWait()const {
+	return m_isWait;
+}
+
+
+const Vector3* Enemy::GetPosition()const {
+	return &m_enemyPos;
+}
+
+
+
+
+
+
+
 
 
 
