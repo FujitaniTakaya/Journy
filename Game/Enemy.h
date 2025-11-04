@@ -2,7 +2,7 @@
 #include "Text.h"
 #include <coroutine>
 #include <optional>
-#include "stdint.h"
+
 
 
 
@@ -20,7 +20,12 @@ public:
 	/// <param name="rc"></param>
 	void Render(RenderContext& rc)override;
 
+
 protected:
+	/// <summary>
+	/// エネミーの位置を更新する
+	/// </summary>
+	void UpdateEnemyPos();
 	/// <summary>
 	/// エネミーのモデルを初期化する
 	/// 引数に初期化したいエネミーの種類番号を渡す
@@ -34,20 +39,23 @@ protected:
 	/// <param name="model">調べたいモデルのポインタ</param>
 	/// <returns>nullptrでなければtrueを返す</returns>
 	bool IsModel(const ModelRender* model);
-
-
-	/// <summary>
-	/// エネミーの位置を更新する
-	/// </summary>
-	void UpdateEnemyPos();
+	
 	
 	
 protected:
-
 	/// <summary>
-	/// エネミーがランダムウォークする
+	/// ランダムウォーク
 	/// </summary>
 	void RandomWalkAround();
+
+
+protected:
+	/// <summary>
+	/// 次の目的地の方向を向く
+	/// </summary>
+	void RotToMoveDirection();
+
+
 private:
 	/// <summary>
 	/// 次の目的地を決定する
@@ -56,6 +64,7 @@ private:
 
 
 
+private:
 	/// <summary>
 	/// 待機処理を開始する
 	/// </summary>
@@ -83,8 +92,8 @@ protected:
 	/// <summary>
 	/// 目的地の方向を向いているかどうか
 	/// </summary>
-	/// <returns>目的地の方向を向いていればtrueを返す</returns>
-	bool IsRotateMovePos();
+	/// <returns>目的地の方向を向いていればenEnemyRot_Noneを返す</returns>
+	const EnEnemyRot WhichRotateMovePos();
 	/// <summary>
 	/// 次の目的地にいるかどうか
 	/// </summary>
@@ -116,6 +125,9 @@ protected:
 	Vector3 m_toMovePos = Vector3::Zero;					//次の目的地
 	Quaternion m_enemyRotate = Quaternion::Identity;		//回転情報
 	CharacterController m_enemyCharaCon;					//キャラコン(当たり判定)
+
+
+	bool m_isDecideToMovePos = false;						//目的地を決定したかどうか
 };
 
 class Normal : public Enemy {

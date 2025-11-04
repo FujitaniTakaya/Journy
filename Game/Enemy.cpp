@@ -36,6 +36,12 @@ namespace {
 	};
 
 	const float WALK_SPEED = 40.0f;
+	const float CHASE_SPEED = 60.0f;
+	
+	const float ROTATE_SPEED = 1.5f;
+
+
+	const float FRONT_ANGLE = 0.9999f;
 }
 
 
@@ -81,7 +87,7 @@ void Enemy::Update() {
 	//デバッグ用ベクトル描画
 
 	DrawVectorFront();
-	DrawVectorToMovePos();
+	//DrawVectorToMovePos();
 }
 
 
@@ -101,21 +107,16 @@ void Enemy::UpdateEnemyPos() {
 
 
 void Enemy::SetEnemyModel(const int enemyNum) {
-	//メンバ変数へ代入
+	//モデルの初期化
 	ModelRender* model = new ModelRender;
 	std::string filePath = EnemiesModel[enemyNum].GetModelFullPath();
-	Vector3 scale = EnemiesModel[enemyNum].modelScale;
-	Vector2 collisionScl = EnemiesModel[enemyNum].charConScale;	
-	float rot = 0.0f;
-	rot = rand() % 360;
-	m_enemyRotate.SetRotationDegY(rot);
-	//モデルとコリジョンを初期化
 	model->Init(filePath.c_str());
-	model->SetTRS(m_enemyPos, m_enemyRotate, scale);
 
-	//float rotation = rand() % 360;
-	//m_enemyRotate.SetRotationDegY(rotation);
-	//model->SetRotation(m_enemyRotate);
+	//モデルの位置、回転、スケールを設定
+	Vector3 scale = EnemiesModel[enemyNum].modelScale;
+	Vector2 collisionScl = EnemiesModel[enemyNum].charConScale;
+	m_enemyRotate.SetRotationDegY(rand() % 360);	
+	model->SetTRS(m_enemyPos, m_enemyRotate, scale);
 	
 	m_enemyModelRender = model;
 	m_enemyModelRender->Update();
@@ -133,12 +134,15 @@ void Enemy::DecideToMovePos() {
 	m_toMovePos.z = rand() % 401 - 200;
 	m_toMovePos += m_firstEnemyPos;
 	m_toMovePos.y = 0.0f;
+
+	m_isDecideToMovePos = true;
 }
 
 
 void Enemy::RandomWalkAround() {
 	if (IsBeingToMovePos()) {		
 		DecideToMovePos();
+
 		StartWaitTime(m_isWait);
 		std::thread waitThread([this]() {
 			this->RandomWait(this->m_isWait);
@@ -149,6 +153,13 @@ void Enemy::RandomWalkAround() {
 
 	//待機中だったら
 	if (IsWait()) {
+		return;
+	}
+
+
+	//前方向と目的地の方向を比べて回転させる
+	if (WhichRotateMovePos() != EnEnemyRot::enEnemyRot_None) {
+		RotToMoveDirection();
 		return;
 	}
 
@@ -165,13 +176,27 @@ void Enemy::RandomWalkAround() {
 
 
 void Enemy::RandomWait(std::atomic<bool>& waitFlag) {
-	static std::mt19937 rang(std::random_device{}());
-	std::uniform_int_distribution<int> dist(300, 3299);
-
-	int waitTime = dist(rang);
+	int waitTime = rand() % 3000 + 300;
 	std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
 	waitFlag = false;
 }
+
+
+void Enemy::RotToMoveDirection() {
+	float rotAmount = 0.0f;
+	if (WhichRotateMovePos() == EnEnemyRot::enEnemyRot_Right) {
+		//右回転
+		rotAmount = -ROTATE_SPEED;
+	}
+	if (WhichRotateMovePos() == EnEnemyRot::enEnemyRot_Left) {
+		//左回転
+		rotAmount = ROTATE_SPEED;
+	}
+	m_enemyRotate.AddRotationDegY(rotAmount);
+	m_enemyModelRender->SetRotation(m_enemyRotate);
+	m_enemyModelRender->Update();
+}
+
 
 
 void Enemy::DrawVectorFront() {
@@ -226,9 +251,36 @@ bool Enemy::IsBeingToMovePos()const {
 
 
 
-bool Enemy::IsRotateMovePos() {
+const EnEnemyRot Enemy::WhichRotateMovePos() {
+	Vector3 toMoveVec = m_toMovePos - m_enemyPos;
+	toMoveVec.y = 0.0f;
+	toMoveVec.Normalize();
 
-	return true;
+	Vector3 front = Vector3::AxisZ;
+	m_enemyRotate.Apply(front);
+	front.y = 0.0f;
+	front.Normalize();
+
+	//外積を求める
+	//右回りか左回りか判定するため
+	Vector3 cross = Cross(front, toMoveVec);
+	cross.Normalize();
+	
+	//内積を求める
+	float dot = Dot(front, toMoveVec);
+	
+	//ほぼ同じ方向を向いていれば回転しない
+	if (dot > FRONT_ANGLE) {
+		return EnEnemyRot::enEnemyRot_None;
+	}
+	//0.0fより小さければ右回転
+	if (cross.y < 0.0f) {
+		return EnEnemyRot::enEnemyRot_Right;
+	}
+	//0.0fより大きければ左回転
+	if (cross.y > 0.0f) {
+		return EnEnemyRot::enEnemyRot_Left;
+	}	
 }
 
 

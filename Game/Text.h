@@ -1,5 +1,5 @@
 #pragma once
-
+#include "stdint.h"
 
 enum EnPlayerState {
 	enPlayerState_Idle,
@@ -12,6 +12,13 @@ namespace {
 	float ONE_FRAME = 1 / 60.0f;
 }
 
+
+enum class EnEnemyRot : uint8_t{
+	enEnemyRot_Left,
+	enEnemyRot_Right,
+	enEnemyRot_None,
+	enEnemyRot_Num
+};
 
 
 enum class EnEnemy : uint8_t
