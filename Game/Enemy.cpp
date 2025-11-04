@@ -256,6 +256,8 @@ void Enemy::Death() {
 	if (!IsHitPlayerAtkCollision()) {
 		return;
 	}
+	m_player->SetIsKill(true);
+	//エネミーを削除
 	DeleteGO(this);
 }
 
@@ -327,14 +329,13 @@ const bool Enemy::IsHitPlayerAtkCollision() {
 		return false;
 	}
 	const float playerHight = m_player->GetPosition().y;
-	const float enemyHedHight = m_enemyPos.y + (EnemiesModel[static_cast<int>(GetEnemyType())].charConScale.y);
+	const float enemyHedHight = m_enemyPos.y + (EnemiesModel[static_cast<int>(GetEnemyType())].charConScale.y * 2);
 	if (playerHight <= enemyHedHight) {
 		return false;
 	}
 
 	return true;
 }
-
 
 
 const bool Enemy::IsWait()const {
@@ -400,7 +401,7 @@ const EnEnemyRot Enemy::WhichRotateMovePos() {
 	//0.0fより大きければ左回転
 	if (cross.y > 0.0f) {
 		return EnEnemyRot::enEnemyRot_Left;
-	}	
+	}
 }
 
 

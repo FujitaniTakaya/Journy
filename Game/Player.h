@@ -65,7 +65,11 @@ private:
 	/// </summary>
 	/// <returns>時間が経ったらtrueを返す</returns>
 	bool MeasureNextJumpFrameCount();
-	
+	/// <summary>
+	/// 敵を倒した直後かどうか
+	/// </summary>
+	/// <returns>倒した直後であればtrueを返す</returns>
+	inline const bool IsKillEnemy()const;
 
 	/// <summary>
 	/// プレイヤーのモデルをセットする
@@ -86,7 +90,7 @@ private:
 	/// <summary>
 	/// 位置更新
 	/// </summary>
-	void UpdateCharaInfo();
+	void UpdateCharaPos();
 	/// <summary>
 	/// ジャンプの処理
 	/// </summary>
@@ -103,6 +107,10 @@ private:
 	/// ジャンプ攻撃処理
 	/// </summary>
 	void JumpAtk();
+	/// <summary>
+	/// 敵を倒した後のジャンプ処理
+	/// </summary>
+	void JumpAfterKillEnemy();
 
 
 public:
@@ -111,6 +119,8 @@ public:
 	/// </summary>
 	/// <returns>コリジョンのポインタを返す</returns>
 	CollisionObject* GetAtkCollision()const;
+
+	void SetIsKill(const bool isKill);
 
 
 public:
@@ -155,5 +165,6 @@ private:
 	bool m_canNextJump = false;
 
 	bool m_isAtk = false;
+	bool m_isKill = false;
 };
 

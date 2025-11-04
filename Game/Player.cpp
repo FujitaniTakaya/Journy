@@ -65,7 +65,7 @@ void Player::Update() {
 	JumpAtk();
 	UpdateAtkCollisionInfo();
 	ManagePlayerState();
-	UpdateCharaInfo();
+	UpdateCharaPos();
 	m_playerModelRender->Update();
 }
 
@@ -187,58 +187,201 @@ void Player::Move() {
 }
 
 
-//ステート管理
-//そのステートに当てはまるアニメーションを再生する
 void Player::ManagePlayerState() {
 	m_playerState = enPlayerState_Idle;
 	
+	//移動中であれば
 	if (IsMove()) {
 		m_playerState = enPlayerState_Walk;
 		m_moveState = enPlayerMoveState_Walk;
 	}
+	//走っていれば
 	if (IsRun()) {
 		m_playerState = enPlayerState_Run;
 		m_moveState = enPlayerMoveState_Run;
 	}
+	//地面についていなければ
 	if (!m_playerCharaCon.IsOnGround()) {
 		m_playerState = enPlayerState_Jump;
 	}
-	
+	//アニメーション再生
 	m_playerModelRender->PlayAnimation(m_playerState);
 }
 
 
 void Player::Rotate() {
+	//速度をもとに回転を設定
 	m_rotation.SetRotationYFromDirectionXZ(m_moveSpeed);
+	//モデルの回転を更新
 	m_playerModelRender->SetRotation(m_rotation);
 }
 
 
+void Player::Jump() {
+
+	//敵を倒した直後であれば
+	if (IsKillEnemy()) {
+		//敵を倒した後のジャンプ処理
+		JumpAfterKillEnemy();
+		return;
+	}
+
+	//ジャンプ可能な状態でなければ
+	if (!CanJump()) {
+		//何もしない
+		return;
+	}
+	//次の段階のジャンプが可能でなければ
+	if (m_canNextJump) {
+		//次の段階のジャンプが不可能になれば
+		if (MeasureNextJumpFrameCount()) {
+			//ジャンプ状態を最初に戻す
+			m_jumpState = enJumpPower_First;
+			m_canNextJump = false;
+			return;
+		}
+	}
+	//ジャンプボタンが押されていなければ
+	if (!g_pad[0]->IsTrigger(enButtonB)) {
+		return;
+	}
+	//ジャンプ力を加算
+	float jumpPower = MoveInfo::JUMP_POWER[m_jumpState];
+	m_moveSpeed.y += jumpPower;
+
+	//ジャンプ状態を更新
+	m_jumpState = static_cast<EnJumpPower>((m_jumpState + 1) % enJumpPower_Num);
+	m_canNextJump = true;
+	//最初の段階のジャンプでなければ
+	if (m_jumpState != enJumpPower_First) {
+		return;
+	}
+	m_canNextJump = false;
+}
 
 
-//重力を返す
+void Player::JumpAtk() {
+	//ジャンプ中なら
+	if (m_playerState == enPlayerState_Jump) {
+		//当たり判定があれば
+		if (m_playerAtkCollision) {
+			//何もしない
+			return;
+		}
+		//攻撃中でなければ
+		if (!m_isAtk) {
+			//攻撃コリジョン生成
+			SetAtkCollision();
+		}
+	}
+	//ジャンプ中でなければ
+	else {
+		//攻撃コリジョンがなければ
+		if (!m_playerAtkCollision) {
+			//何もしない
+			return;
+		}
+		//攻撃コリジョン削除
+		delete m_playerAtkCollision;
+		m_playerAtkCollision = nullptr;
+		m_isAtk = false;
+	}	
+}
+
+
+void Player::JumpAfterKillEnemy() {
+	//地面についていれば
+	if (m_playerCharaCon.IsOnGround()) {
+		//敵を倒したフラグをリセット
+		SetIsKill(false);
+		return;
+	}
+	//次のジャンプまでの猶予時間を計測
+	//規定時間たったら
+	if (MeasureNextJumpFrameCount()) {
+		//敵を倒したフラグをリセット
+		SetIsKill(false);
+		//滞空時間をリセット
+		m_flyingTime = 0.0f;
+		//移動速度をリセット
+		m_moveSpeed.y = 0.0f;
+ 
+		//ジャンプ力を加算
+		float jumpPower = MoveInfo::JUMP_POWER[enJumpPower_First];
+		m_moveSpeed.y += jumpPower;
+		m_jumpState = enJumpPower_First;
+		m_canNextJump = false;
+		
+		return;
+	}
+	//ジャンプボタンが押されていなければ
+	if (!g_pad[0]->IsTrigger(enButtonB)) {
+		return;
+	}
+	//敵を倒したフラグをリセット
+	SetIsKill(false);
+	//滞空時間をリセット
+	m_flyingTime = 0.0f;
+	//移動速度をリセット
+	m_moveSpeed.y = 0.0f;
+
+	//ジャンプ力を加算
+	float jumpPower = MoveInfo::JUMP_POWER[m_jumpState];
+	m_moveSpeed.y += jumpPower;
+	//ジャンプ状態を更新
+	m_jumpState = static_cast<EnJumpPower>((m_jumpState + 1) % enJumpPower_Num);
+	m_canNextJump = false;
+}
+
+
+void Player::UpdateCharaPos() {
+	//移動していなければ処理しない
+	if (!IsMove()) {
+		return;
+	}
+	//キャラコンに速度を加算して位置を更新
+	m_position = m_playerCharaCon.Execute(m_moveSpeed, ONE_FRAME);
+	//モデルの位置を更新
+	m_playerModelRender->SetPosition(m_position);
+}
+
+
+void Player::SetIsKill(const bool isKill) {
+	m_isKill = isKill;
+}
+
+
+inline const bool Player::IsKillEnemy()const {
+	return m_isKill;
+}
+
+
+const Vector3& Player::GetPosition()const {
+	return m_position;
+}
+
+
 float Player::Gravity() {
+
 	m_flyingTime += ONE_FRAME * 5.0f;
 	return MoveInfo::GRAVITY * m_flyingTime;
 }
 
 
-//ジャンプできるかどうか判定
-//その時の重力も制御
 bool Player::CanJump() {
 	//地面についていなかったら
 	if (!m_playerCharaCon.IsOnGround()) {
 		//重力を発生させる
-		m_moveSpeed.y += Gravity();
+		m_moveSpeed.y += Gravity();		
 		return false;
 	}
+	//地面についているのでタイマーをリセット
 	m_flyingTime = 0.0f;
 	m_moveSpeed.y = 0.0f;
 	return true;
 }
 
 
-//規定時間たったかどうかを判定
 bool Player::MeasureNextJumpFrameCount() {
 	if (m_standingTime <= MoveInfo::CAN_NEXT_JUMP_FRAME) {
 		m_standingTime += ONE_FRAME;
@@ -267,70 +410,6 @@ bool Player::CanNextPowerJump() {
 		return false;
 	}
 
-	
+
 	return true;
-}
-
-
-void Player::Jump() {
-	if (!CanJump()) {
-		return;
-	}
-	if (m_canNextJump) {
-		if (MeasureNextJumpFrameCount()) {
-			m_jumpState = enJumpPower_First;
-			m_canNextJump = false;
-			return;
-		}
-	}
-	if (!g_pad[0]->IsTrigger(enButtonB)) {
-		return;
-	}
-	float jumpPower = MoveInfo::JUMP_POWER[m_jumpState];
-	m_moveSpeed.y += jumpPower;
-
-	m_jumpState = static_cast<EnJumpPower>((m_jumpState + 1) % enJumpPower_Num);
-	m_canNextJump = true;
-	if (!(m_jumpState == enJumpPower_First)) {
-		return;
-	}
-	m_canNextJump = false;
-}
-
-
-void Player::JumpAtk() {
-	
-	if (m_playerState == enPlayerState_Jump) {
-		if (m_playerAtkCollision) {
-			return;
-		}
-		if (!m_isAtk) {
-			//攻撃コリジョン生成
-			SetAtkCollision();
-		}
-	}
-	else {
-		if (!m_playerAtkCollision) {
-			return;
-		}
-		//攻撃コリジョン削除
-		delete m_playerAtkCollision;
-		m_playerAtkCollision = nullptr;
-		m_isAtk = false;
-	}	
-}
-
-
-void Player::UpdateCharaInfo() {
-	if (!IsMove()) {
-		return;
-	}
-	m_position = m_playerCharaCon.Execute(m_moveSpeed, ONE_FRAME);
-	m_playerModelRender->SetPosition(m_position);
-}
-
-
-
-const Vector3& Player::GetPosition()const {
-	return m_position;
 }
