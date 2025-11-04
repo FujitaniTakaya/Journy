@@ -91,8 +91,10 @@ void Enemy::Update() {
 	Move();
 
 	//デバッグ用ベクトル描画
-	DrawVectorFront();
+	//DrawVectorFront();
 	//DrawVectorToMovePos();
+
+	Death();
 }
 
 
@@ -127,6 +129,8 @@ void Enemy::SetEnemyModel(const int enemyNum) {
 	m_enemyModelRender = model;
 	m_enemyModelRender->Update();
 	m_enemyCharaCon.Init(collisionScl.x, collisionScl.y, m_enemyPos);
+
+	m_enemyType = static_cast<EnEnemy>(enemyNum);
 }
 
 
@@ -248,6 +252,13 @@ void Enemy::ChasePlayer() {
 }
 
 
+void Enemy::Death() {
+	if (!IsHitPlayerAtkCollision()) {
+		return;
+	}
+	DeleteGO(this);
+}
+
 
 
 void Enemy::DrawVectorFront() {
@@ -305,6 +316,26 @@ const bool Enemy::IsFoundPlayer() {
 }
 
 
+const bool Enemy::IsHitPlayerAtkCollision() {
+	//プレイヤーの攻撃コリジョンを取得
+	CollisionObject* playerAtkCollision = m_player->GetAtkCollision();
+	if (!playerAtkCollision) {
+		return false;
+	}
+	//エネミーのキャラコンとプレイヤーの攻撃コリジョンが当たっていたら
+	if (!playerAtkCollision->IsHit(m_enemyCharaCon)) {
+		return false;
+	}
+	const float playerHight = m_player->GetPosition().y;
+	const float enemyHedHight = m_enemyPos.y + (EnemiesModel[static_cast<int>(GetEnemyType())].charConScale.y);
+	if (playerHight <= enemyHedHight) {
+		return false;
+	}
+
+	return true;
+}
+
+
 
 const bool Enemy::IsWait()const {
 	return m_isWait;
@@ -323,6 +354,10 @@ bool Enemy::IsModel(const ModelRender* model) {
 	return true;
 }
 
+
+inline const EnEnemy& Enemy::GetEnemyType()const {
+	return m_enemyType;
+}
 
 
 bool Enemy::IsBeingToMovePos()const {

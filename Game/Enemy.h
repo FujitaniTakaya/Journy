@@ -21,13 +21,11 @@ public:
 	void Render(RenderContext& rc)override;
 
 
-
 protected:
 	/// <summary>
 	/// 他クラスの情報を取得する
 	/// </summary>
 	void GetOtherClassInfo();
-
 
 
 protected:
@@ -78,7 +76,6 @@ private:
 	void DecideToMovePos();
 
 
-
 private:
 	/// <summary>
 	/// 待機処理を開始する
@@ -124,7 +121,9 @@ protected:
 	/// </summary>
 	/// <returns>発見していたらtrueを返す</returns>
 	const bool IsFoundPlayer();
-
+	/// <summary>
+	/// プレイヤーを追従する
+	/// </summary>
 	void ChasePlayer();
 
 protected:
@@ -137,12 +136,32 @@ protected:
 	/// </summary>
 	void DrawVectorFront();
 
+
+private:
+	/// <summary>
+	/// プレイヤーの攻撃コリジョンに当たっているかどうか
+	/// </summary>
+	/// <returns>当たっていたらtrueを返す</returns>
+	const bool IsHitPlayerAtkCollision();
+	/// <summary>
+	/// 自身が死亡する処理
+	/// </summary>
+	void Death();
+
+
+private:
+
+	inline const EnEnemy& GetEnemyType()const;
+
+
 protected:
 	Player* m_player = nullptr;								//プレイヤーのポインタ
 
 
 private:
-	std::atomic<bool> m_isWait = true;
+	std::atomic<bool> m_isWait = true;						//待機中かどうかのフラグ
+
+	EnEnemy m_enemyType = EnEnemy::enEnemy_Num;				//エネミーの種類
 
 protected:
 	ModelRender* m_enemyModelRender = nullptr;				//エネミーのモデルを格納するポインタ

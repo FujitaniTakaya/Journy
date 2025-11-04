@@ -65,7 +65,7 @@ void Player::Update() {
 	JumpAtk();
 	UpdateAtkCollisionInfo();
 	ManagePlayerState();
-	CharaMove();
+	UpdateCharaInfo();
 	m_playerModelRender->Update();
 }
 
@@ -115,6 +115,11 @@ void Player::UpdateAtkCollisionInfo() {
 	m_playerAtkCollision->SetPosition(m_position);
 	m_playerAtkCollision->SetRotation(m_rotation);
 	m_playerAtkCollision->Update();
+}
+
+
+CollisionObject* Player::GetAtkCollision()const {
+	return m_playerAtkCollision;
 }
 
 
@@ -245,7 +250,7 @@ bool Player::MeasureNextJumpFrameCount() {
 }
 
 
-bool Player::CanNextJump() {
+bool Player::CanNextPowerJump() {
 	//空中にいるときにジャンプボタンを押したら
 	if (!CanJump()) {
 		if (g_pad[0]->IsTrigger(enButtonB)) {
@@ -316,7 +321,7 @@ void Player::JumpAtk() {
 }
 
 
-void Player::CharaMove() {
+void Player::UpdateCharaInfo() {
 	if (!IsMove()) {
 		return;
 	}
