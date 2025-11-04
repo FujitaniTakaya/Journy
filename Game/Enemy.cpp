@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Enemy.h"
-#include "Text.h"
 #include <random>
 #include <thread>
 
@@ -17,17 +16,20 @@ namespace {
 		std::string folderName = "folderName";
 		//ファイル名
 		std::string fileName = "fileName";
-
+		//モデルのスケール
 		Vector3 modelScale;
+		//キャラコンのスケール
 		Vector2 charConScale;
 
-		//ファイルパスを取得
+		/// <summary>
+		/// エネミーモデルのファイルパスを取得
+		/// </summary>
 		const std::string GetModelFullPath()const {
 			return FILE_PATH + folderName + fileName + FILE_EXTENSTION;
 		}
 	};
 
-	const EnemyInfo EnemiesModel[static_cast<int>(Enemy::EnEnemy::enEnemy_Num)] = {
+	const EnemyInfo EnemiesModel[static_cast<int>(EnEnemy::enEnemy_Num)] = {
 		{"normalEnemy/", "NormalEnemy", {3.0f, 3.0f, 3.5f}, {25.0f, 20.0f}},
 		{ "gimmickEnemy/","GimmickEnemy", {2.8f, 2.0f, 2.8f}, {25.0f, 30.0f}},
 		{ "bossEnemy/","BossEnemy" , {1.0f, 1.2f, 1.0f}, {50.0f, 45.0f}}
@@ -37,7 +39,7 @@ namespace {
 }
 
 
-//ノーマルエネミーの初期化
+
 bool Normal::Start() {
 	SetEnemyModel(static_cast<int>(EnEnemy::enEnemy_Normal));
 	if (!IsModel(m_enemyModelRender)) {
@@ -50,7 +52,7 @@ bool Normal::Start() {
 }
 
 
-//ギミックエネミーの初期化
+
 bool Gimmick::Start() {
 	SetEnemyModel(static_cast<int>(EnEnemy::enEnemy_Gimmick));
 	if (!IsModel(m_enemyModelRender)) {
@@ -60,7 +62,7 @@ bool Gimmick::Start() {
 }
 
 
-//ボスエネミーの初期化
+
 bool Boss::Start() {
 	SetEnemyModel(static_cast<int>(EnEnemy::enEnemy_Boss));
 	if (!IsModel(m_enemyModelRender)) {
@@ -74,28 +76,15 @@ void Enemy::Update() {
 	if (!IsStart()) {
 		return;
 	}
-	RandomWalk();
+	RandomWalkAround();
 
-	Vector3 front = Vector3::AxisZ;
+	//デバッグ用ベクトル描画
 
-	m_enemyRotate.Apply(front);
-	/*front.x = 1.0f;
-	front.y = 1.0f;*/
-	//front.z = m_enemyRotate.z * 1;
-	front.Normalize();
-	front *= 200.0f;
-	Vector3 origin = m_enemyPos;
-	origin.y += 80.0f;
-	g_k2Engine->DrawVector(front, origin);
-	g_k2Engine->DrawVector(Vector3::AxisY*50.0f, Vector3::Zero);
-
-	
-	g_k2Engine->SetDrawVectorEnable();
-
+	DrawVectorFront();
+	DrawVectorToMovePos();
 }
 
 
-//エネミーを描画
 void Enemy::Render(RenderContext& rc) {
 	if (!IsModel(m_enemyModelRender)) {
 		return;
@@ -111,7 +100,6 @@ void Enemy::UpdateEnemyPos() {
 }
 
 
-//エネミーのモデルを初期化する
 void Enemy::SetEnemyModel(const int enemyNum) {
 	//メンバ変数へ代入
 	ModelRender* model = new ModelRender;
@@ -124,8 +112,6 @@ void Enemy::SetEnemyModel(const int enemyNum) {
 	//モデルとコリジョンを初期化
 	model->Init(filePath.c_str());
 	model->SetTRS(m_enemyPos, m_enemyRotate, scale);
-	model->SetScale(scale);
-	model->SetPosition(m_enemyPos);
 
 	//float rotation = rand() % 360;
 	//m_enemyRotate.SetRotationDegY(rotation);
@@ -135,18 +121,6 @@ void Enemy::SetEnemyModel(const int enemyNum) {
 	m_enemyModelRender->Update();
 	m_enemyCharaCon.Init(collisionScl.x, collisionScl.y, m_enemyPos);
 }
-
-
-//モデルが空かどうか判定
-bool Enemy::IsModel(const ModelRender* model) {
-	if (!model) {
-		return false;
-	}
-	return true;
-}
-
-
-
 
 
 void Enemy::StartWaitTime(std::atomic<bool>& waitFlag) {
@@ -162,27 +136,8 @@ void Enemy::DecideToMovePos() {
 }
 
 
-bool Enemy::IsBeingMovePos()const {
-	Vector3 dif = m_toMovePos - m_enemyPos;
-	
-	if (dif.Length() >= WALK_SPEED * 1.2) {
-		return false;
-	}	
-	return true;
-}
-
-
-
-bool Enemy::IsRotateMovePos() {
-	
-	return true;
-}
-
-
-
-//エネミーのランダムウォーク
-void Enemy::RandomWalk() {
-	if (IsBeingMovePos()) {		
+void Enemy::RandomWalkAround() {
+	if (IsBeingToMovePos()) {		
 		DecideToMovePos();
 		StartWaitTime(m_isWait);
 		std::thread waitThread([this]() {
@@ -219,6 +174,28 @@ void Enemy::RandomWait(std::atomic<bool>& waitFlag) {
 }
 
 
+void Enemy::DrawVectorFront() {
+	Vector3 front = Vector3::AxisZ;
+
+	m_enemyRotate.Apply(front);
+	front.Normalize();
+	front *= 200.0f;
+	Vector3 origin = m_enemyPos;
+	origin.y += 80.0f;
+	g_k2Engine->DrawVector(front, origin);
+}
+
+
+void Enemy::DrawVectorToMovePos() {
+	Vector3 toMoveVec = m_toMovePos - m_enemyPos;
+	toMoveVec.Normalize();
+	toMoveVec *= 200.0f;
+	Vector3 origin = m_enemyPos;
+	origin.y += 100.0f;
+	g_k2Engine->DrawVector(toMoveVec, origin);
+}
+
+
 const bool Enemy::IsWait()const {
 	return m_isWait;
 }
@@ -229,8 +206,30 @@ const Vector3* Enemy::GetPosition()const {
 }
 
 
+bool Enemy::IsModel(const ModelRender* model) {
+	if (!model) {
+		return false;
+	}
+	return true;
+}
 
 
+
+bool Enemy::IsBeingToMovePos()const {
+	Vector3 dif = m_toMovePos - m_enemyPos;
+
+	if (dif.Length() >= WALK_SPEED * 1.2) {
+		return false;
+	}
+	return true;
+}
+
+
+
+bool Enemy::IsRotateMovePos() {
+
+	return true;
+}
 
 
 
