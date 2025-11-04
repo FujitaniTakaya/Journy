@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Enemy.h"
+#include "Player.h"
 #include <random>
 #include <thread>
 
@@ -48,6 +49,7 @@ namespace {
 
 bool Normal::Start() {
 	SetEnemyModel(static_cast<int>(EnEnemy::enEnemy_Normal));
+	GetOtherClassInfo();
 	if (!IsModel(m_enemyModelRender)) {
 		return false;
 	}
@@ -61,6 +63,7 @@ bool Normal::Start() {
 
 bool Gimmick::Start() {
 	SetEnemyModel(static_cast<int>(EnEnemy::enEnemy_Gimmick));
+	GetOtherClassInfo();
 	if (!IsModel(m_enemyModelRender)) {
 		return false;
 	}
@@ -71,6 +74,7 @@ bool Gimmick::Start() {
 
 bool Boss::Start() {
 	SetEnemyModel(static_cast<int>(EnEnemy::enEnemy_Boss));
+	GetOtherClassInfo();
 	if (!IsModel(m_enemyModelRender)) {
 		return false;
 	}
@@ -82,10 +86,11 @@ void Enemy::Update() {
 	if (!IsStart()) {
 		return;
 	}
-	RandomWalkAround();
+	//RandomWalkAround();
+
+	Move();
 
 	//デバッグ用ベクトル描画
-
 	DrawVectorFront();
 	//DrawVectorToMovePos();
 }
@@ -99,9 +104,10 @@ void Enemy::Render(RenderContext& rc) {
 }
 
 
-void Enemy::UpdateEnemyPos() {
+void Enemy::UpdateEnemyInfo() {
 	m_enemyPos = m_enemyCharaCon.Execute(m_moveSpeed, ONE_FRAME);
 	m_enemyModelRender->SetPosition(m_enemyPos);
+	m_enemyModelRender->SetRotation(m_enemyRotate);
 	m_enemyModelRender->Update();
 }
 
@@ -124,6 +130,23 @@ void Enemy::SetEnemyModel(const int enemyNum) {
 }
 
 
+void Enemy::GetOtherClassInfo() {
+	//プレイヤーの情報を取得
+	m_player = FindGO<Player>("player");
+}
+
+
+void Enemy::Move() {
+	if (IsFoundPlayer()) {
+		ChasePlayer();
+		return;
+	}
+
+	RandomWalkAround();
+}
+
+
+
 void Enemy::StartWaitTime(std::atomic<bool>& waitFlag) {
 	waitFlag = true;
 }
@@ -134,20 +157,21 @@ void Enemy::DecideToMovePos() {
 	m_toMovePos.z = rand() % 401 - 200;
 	m_toMovePos += m_firstEnemyPos;
 	m_toMovePos.y = 0.0f;
-
-	m_isDecideToMovePos = true;
 }
 
 
 void Enemy::RandomWalkAround() {
-	if (IsBeingToMovePos()) {		
+	//目的地に到着していたら
+	if (IsBeingToMovePos()) {
+		//新しい目的地を決定
 		DecideToMovePos();
 
+		//待機開始
 		StartWaitTime(m_isWait);
 		std::thread waitThread([this]() {
 			this->RandomWait(this->m_isWait);
 			});
-		//std::thread waitThread(RandomWait, canMove);
+		//待機処理をデタッチして別スレッドで実行
 		waitThread.detach();
 	}
 
@@ -156,6 +180,9 @@ void Enemy::RandomWalkAround() {
 		return;
 	}
 
+	//移動速度をリセット(加速させないため)
+	m_moveSpeed.x = 0.0f;
+	m_moveSpeed.z = 0.0f;
 
 	//前方向と目的地の方向を比べて回転させる
 	if (WhichRotateMovePos() != EnEnemyRot::enEnemyRot_None) {
@@ -163,15 +190,14 @@ void Enemy::RandomWalkAround() {
 		return;
 	}
 
+	//目的地の方向を取得
 	Vector3 dif = m_toMovePos - m_enemyPos;
 	dif.Normalize();
 	
-	//移動速度をリセット(加速させないため)
-	m_moveSpeed.x = 0.0f;
-	m_moveSpeed.z = 0.0f;
 	m_moveSpeed += dif * WALK_SPEED;
 
-	UpdateEnemyPos();
+	//エネミーの位置を更新
+	UpdateEnemyInfo();
 }
 
 
@@ -184,26 +210,53 @@ void Enemy::RandomWait(std::atomic<bool>& waitFlag) {
 
 void Enemy::RotToMoveDirection() {
 	float rotAmount = 0.0f;
-	if (WhichRotateMovePos() == EnEnemyRot::enEnemyRot_Right) {
+
+	//左右どちらに回転すればいいか判定
+	EnEnemyRot rotateDir = WhichRotateMovePos();
+
+	if (rotateDir == EnEnemyRot::enEnemyRot_Right) {
 		//右回転
 		rotAmount = -ROTATE_SPEED;
 	}
-	if (WhichRotateMovePos() == EnEnemyRot::enEnemyRot_Left) {
+	if (rotateDir == EnEnemyRot::enEnemyRot_Left) {
 		//左回転
 		rotAmount = ROTATE_SPEED;
 	}
 	m_enemyRotate.AddRotationDegY(rotAmount);
-	m_enemyModelRender->SetRotation(m_enemyRotate);
-	m_enemyModelRender->Update();
+	//エネミーの情報を更新
+	UpdateEnemyInfo();
+}
+
+
+void Enemy::ChasePlayer() {
+	//プレイヤーの位置を取得
+	Vector3 playerPos = m_player->GetPosition();
+	//プレイヤーの方向ベクトルを取得
+	Vector3 toPlayerVec = playerPos - m_enemyPos;
+	toPlayerVec.Normalize();
+	toPlayerVec.y = 0.0f;
+
+	//移動速度をリセット(加速させないため)
+	m_moveSpeed.x = 0.0f;
+	m_moveSpeed.z = 0.0f;
+	m_moveSpeed += toPlayerVec * CHASE_SPEED;
+	
+	m_enemyRotate.SetRotationYFromDirectionXZ(m_moveSpeed);
+	//エネミーの情報を更新
+	UpdateEnemyInfo();
+
 }
 
 
 
-void Enemy::DrawVectorFront() {
-	Vector3 front = Vector3::AxisZ;
 
-	m_enemyRotate.Apply(front);
+void Enemy::DrawVectorFront() {
+	//エネミーの前方向ベクトルを可視化
+	Vector3 front = Vector3::AxisZ;
 	front.Normalize();
+	//回転情報に適用
+	m_enemyRotate.Apply(front);
+
 	front *= 200.0f;
 	Vector3 origin = m_enemyPos;
 	origin.y += 80.0f;
@@ -219,6 +272,38 @@ void Enemy::DrawVectorToMovePos() {
 	origin.y += 100.0f;
 	g_k2Engine->DrawVector(toMoveVec, origin);
 }
+
+
+const bool Enemy::IsFoundPlayer() {
+	Vector3 playerPos = m_player->GetPosition();
+	//エネミーからプレイヤーへのベクトルを取得
+	Vector3 toPlayerVec = playerPos - m_enemyPos;
+	//プレイヤーまでの距離を取得
+	float distance = toPlayerVec.Length();
+	
+	toPlayerVec.Normalize();
+	
+	
+	//エネミーの前方向ベクトルを取得
+	Vector3 front = Vector3::AxisZ;
+	m_enemyRotate.Apply(front);
+	front.Normalize();
+		
+	
+	//内積を求める
+	float dot = Dot(front, toPlayerVec);
+	
+	//距離が遠すぎたら発見しない
+	if (distance > 300.0f) {
+		return false;
+	}
+	//前方向にいなければ発見しない
+	if (dot < 0.6f) {
+		return false;
+	}
+	return true;
+}
+
 
 
 const bool Enemy::IsWait()const {

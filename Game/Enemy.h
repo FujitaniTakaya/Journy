@@ -4,7 +4,7 @@
 #include <optional>
 
 
-
+class Player;
 
 class Enemy : public IGameObject{
 public:
@@ -21,11 +21,20 @@ public:
 	void Render(RenderContext& rc)override;
 
 
+
 protected:
 	/// <summary>
-	/// エネミーの位置を更新する
+	/// 他クラスの情報を取得する
 	/// </summary>
-	void UpdateEnemyPos();
+	void GetOtherClassInfo();
+
+
+
+protected:
+	/// <summary>
+	/// エネミーの情報を更新する
+	/// </summary>
+	void UpdateEnemyInfo();
 	/// <summary>
 	/// エネミーのモデルを初期化する
 	/// 引数に初期化したいエネミーの種類番号を渡す
@@ -41,7 +50,13 @@ protected:
 	bool IsModel(const ModelRender* model);
 	
 	
-	
+private:
+	/// <summary>
+	/// エネミーの行動処理
+	/// </summary>
+	void Move();
+
+
 protected:
 	/// <summary>
 	/// ランダムウォーク
@@ -79,17 +94,6 @@ private:
 
 protected:
 	/// <summary>
-	/// 次の目的地へのベクトルを可視化
-	/// </summary>
-	void DrawVectorToMovePos();
-	/// <summary>
-	/// エネミーのモデルの前方向ベクトルを可視化
-	/// </summary>
-	void DrawVectorFront();
-
-
-protected:
-	/// <summary>
 	/// 目的地の方向を向いているかどうか
 	/// </summary>
 	/// <returns>目的地の方向を向いていればenEnemyRot_Noneを返す</returns>
@@ -113,7 +117,30 @@ private:
 	/// <returns></returns>
 	const Vector3* GetPosition()const;
 
-	
+
+protected:
+	/// <summary>
+	///	プレイヤーを発見したかどうか
+	/// </summary>
+	/// <returns>発見していたらtrueを返す</returns>
+	const bool IsFoundPlayer();
+
+	void ChasePlayer();
+
+protected:
+	/// <summary>
+	/// 次の目的地へのベクトルを可視化
+	/// </summary>
+	void DrawVectorToMovePos();
+	/// <summary>
+	/// エネミーのモデルの前方向ベクトルを可視化
+	/// </summary>
+	void DrawVectorFront();
+
+protected:
+	Player* m_player = nullptr;								//プレイヤーのポインタ
+
+
 private:
 	std::atomic<bool> m_isWait = true;
 
@@ -125,9 +152,6 @@ protected:
 	Vector3 m_toMovePos = Vector3::Zero;					//次の目的地
 	Quaternion m_enemyRotate = Quaternion::Identity;		//回転情報
 	CharacterController m_enemyCharaCon;					//キャラコン(当たり判定)
-
-
-	bool m_isDecideToMovePos = false;						//目的地を決定したかどうか
 };
 
 class Normal : public Enemy {

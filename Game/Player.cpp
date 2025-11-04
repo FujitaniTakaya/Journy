@@ -276,3 +276,9 @@ void Player::CharaMove() {
 	m_position = m_playerCharaCon.Execute(m_moveSpeed, ONE_FRAME);
 	m_playerModelRender->SetPosition(m_position);
 }
+
+
+
+const Vector3& Player::GetPosition()const {
+	return m_position;
+}

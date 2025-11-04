@@ -30,6 +30,14 @@ private:
 	void Rotate();
 
 public:
+	/// <summary>
+	/// プレイヤーの現在地を取得する
+	/// </summary>
+	/// <returns></returns>
+	const Vector3& GetPosition()const;
+
+
+public:
 	enum EnPlayerMoveState {
 		enPlayerMoveState_Walk,
 		enPlayerMoveState_Run,
