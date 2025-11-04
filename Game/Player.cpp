@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Player.h"
+#include <thread>
 
 namespace {
 	//ファイルの場所
@@ -23,7 +24,7 @@ namespace {
 	};
 	const char* UNITY_MODEL = "Assets/modelData/unityChan.tkm";
 
-	Vector2 CHARA_CON = { 25.0f, 75.0f };
+	Vector2 CHARA_CON = { 15.0f, 65.0f };
 
 
 	namespace MoveInfo {
@@ -42,8 +43,10 @@ namespace {
 		float GRAVITY = -9.8f;								//重力加速度
 	}
 
-	
 
+	namespace AtkInfo {
+		Vector3 ATK_COLLISION_SCL = { 40.0f, 10.0f, 30.0f };
+	}
 }
 
 
@@ -59,6 +62,8 @@ Player::~Player() {
 void Player::Update() {
 	Move();
 	Jump();
+	JumpAtk();
+	UpdateAtkCollisionInfo();
 	ManagePlayerState();
 	CharaMove();
 	m_playerModelRender->Update();
@@ -93,6 +98,24 @@ void Player::SetPlayerModel() {
 	
 }
 
+
+void Player::SetAtkCollision() {
+	m_playerAtkCollision = new CollisionObject;
+	m_playerAtkCollision->CreateBox(m_position, m_rotation, AtkInfo::ATK_COLLISION_SCL);
+	UpdateAtkCollisionInfo();
+
+	m_isAtk = true;
+}
+
+
+void Player::UpdateAtkCollisionInfo() {
+	if (!m_playerAtkCollision) {
+		return;
+	}
+	m_playerAtkCollision->SetPosition(m_position);
+	m_playerAtkCollision->SetRotation(m_rotation);
+	m_playerAtkCollision->Update();
+}
 
 
 bool Player::IsMove() {
@@ -187,6 +210,7 @@ void Player::Rotate() {
 
 
 
+
 //重力を返す
 float Player::Gravity() {
 	m_flyingTime += ONE_FRAME * 5.0f;
@@ -266,6 +290,29 @@ void Player::Jump() {
 		return;
 	}
 	m_canNextJump = false;
+}
+
+
+void Player::JumpAtk() {
+	
+	if (m_playerState == enPlayerState_Jump) {
+		if (m_playerAtkCollision) {
+			return;
+		}
+		if (!m_isAtk) {
+			//攻撃コリジョン生成
+			SetAtkCollision();
+		}
+	}
+	else {
+		if (!m_playerAtkCollision) {
+			return;
+		}
+		//攻撃コリジョン削除
+		delete m_playerAtkCollision;
+		m_playerAtkCollision = nullptr;
+		m_isAtk = false;
+	}	
 }
 
 

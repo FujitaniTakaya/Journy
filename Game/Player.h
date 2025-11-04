@@ -1,6 +1,7 @@
 #pragma once
 #include "Text.h"
-
+#include <coroutine>
+#include <optional>
 
 class Player : public IGameObject{
 public:
@@ -21,13 +22,15 @@ private:
 	
 
 	void SetPlayerModel();
+	void SetAtkCollision();
 	void ManagePlayerState();
-
+	void UpdateAtkCollisionInfo();
 
 	void CharaMove();
 	void Jump();
 	void Move();
 	void Rotate();
+	void JumpAtk();
 
 public:
 	/// <summary>
@@ -55,12 +58,11 @@ private:
 	ModelRender* m_playerModelRender = nullptr;
 	AnimationClip m_playerAnimClips[enPlayerState_Num];
 	CharacterController m_playerCharaCon;
+	CollisionObject* m_playerAtkCollision = nullptr;
 
 
-public:
-	Vector3 m_position = Vector3::Zero;
-	
 private:
+	Vector3 m_position = Vector3::Zero;
 	Vector3 m_moveSpeed = Vector3::Zero;
 	int m_moveState = enPlayerMoveState_Walk;
 	Quaternion m_rotation = Quaternion::Identity;
@@ -71,5 +73,8 @@ private:
 	bool m_canNextJump = false;
 
 	int m_playerState = enPlayerState_Idle;
+
+
+	bool m_isAtk = false;
 };
 
