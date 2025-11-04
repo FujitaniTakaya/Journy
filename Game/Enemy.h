@@ -9,6 +9,10 @@ class Player;
 class Enemy : public IGameObject{
 public:
 	/// <summary>
+	/// デストラクタ
+	/// </summary>
+	~Enemy();
+	/// <summary>
 	///　更新処理
 	/// 毎フレーム実行される
 	/// </summary>

@@ -30,21 +30,33 @@ namespace {
 		}
 	};
 
+	/// <summary>
+	/// エネミー情報の配列
+	/// </summary>
 	const EnemyInfo EnemiesModel[static_cast<int>(EnEnemy::enEnemy_Num)] = {
 		{"normalEnemy/", "NormalEnemy", {3.0f, 3.0f, 3.5f}, {25.0f, 20.0f}},
 		{ "gimmickEnemy/","GimmickEnemy", {2.8f, 2.0f, 2.8f}, {25.0f, 30.0f}},
 		{ "bossEnemy/","BossEnemy" , {1.0f, 1.2f, 1.0f}, {50.0f, 45.0f}}
 	};
 
-	const float WALK_SPEED = 40.0f;
-	const float CHASE_SPEED = 60.0f;
-	
-	const float ROTATE_SPEED = 1.5f;
-
-
-	const float FRONT_ANGLE = 0.9999f;
+	const float WALK_SPEED = 40.0f;			//歩くスピード
+	const float CHASE_SPEED = 60.0f;		//プレイヤーを追従するスピード
+											
+	const float ROTATE_SPEED = 1.5f;		//回転するスピード
+											
+											
+	const float FRONT_ANGLE = 0.9999f;		//正面方向の許容値(コサイン値)
 }
 
+
+
+Enemy::~Enemy() {
+	//モデルの解放
+	delete m_enemyModelRender;
+	m_enemyModelRender = nullptr;
+	//プレイヤー情報の解放
+	m_player = nullptr;
+}
 
 
 bool Normal::Start() {
@@ -260,7 +272,6 @@ void Enemy::Death() {
 	//エネミーを削除
 	DeleteGO(this);
 }
-
 
 
 void Enemy::DrawVectorFront() {
