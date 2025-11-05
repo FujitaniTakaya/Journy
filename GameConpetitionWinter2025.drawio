@@ -1,0 +1,131 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36" version="28.2.9">
+  <diagram name="ページ1" id="J3p0cc81mLJLXocO7AwE">
+    <mxGraphModel dx="1584" dy="914" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="4681" pageHeight="3300" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="57H5Bfn5HqLel8Yp6bTl-2" target="57H5Bfn5HqLel8Yp6bTl-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="57H5Bfn5HqLel8Yp6bTl-2" target="57H5Bfn5HqLel8Yp6bTl-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-2" value="Character&lt;div&gt;・ModelRender&lt;/div&gt;&lt;div&gt;・CharacterController&lt;/div&gt;&lt;div&gt;・CollisionObject&lt;/div&gt;&lt;div&gt;・position&lt;/div&gt;&lt;div&gt;・scale&lt;/div&gt;&lt;div&gt;・rotation&lt;/div&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="160" y="80" width="120" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-3" value="Player&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;・&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;PlayerStatus&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="160" y="310" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="57H5Bfn5HqLel8Yp6bTl-5">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="360" y="440" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="57H5Bfn5HqLel8Yp6bTl-5" target="57H5Bfn5HqLel8Yp6bTl-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="57H5Bfn5HqLel8Yp6bTl-5" target="57H5Bfn5HqLel8Yp6bTl-10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-5" value="Enemy" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="350" y="310" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-8" value="NormalEnemy&lt;div&gt;・NormalEnemyStatus&lt;/div&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="290" y="440" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-9" value="nokonoko&lt;div&gt;・nokonokoStatus&lt;/div&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="440" y="440" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-10" value="Boss&lt;div&gt;・BossStatus&lt;/div&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="580" y="440" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="57H5Bfn5HqLel8Yp6bTl-13" target="57H5Bfn5HqLel8Yp6bTl-14">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="57H5Bfn5HqLel8Yp6bTl-13" target="57H5Bfn5HqLel8Yp6bTl-15">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-13" value="CharacterStatus&lt;div&gt;・判定のサイズ&lt;/div&gt;&lt;div&gt;・HP&lt;/div&gt;&lt;div&gt;・WalkSpeed&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="760" y="110" width="120" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-14" value="PlayerStatus&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;・DashSpeed&lt;/span&gt;&lt;/div&gt;&lt;div&gt;・JumpPower&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="760" y="300" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="57H5Bfn5HqLel8Yp6bTl-15" target="57H5Bfn5HqLel8Yp6bTl-19">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1030" y="390" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="1030" y="400" />
+              <mxPoint x="970" y="400" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="57H5Bfn5HqLel8Yp6bTl-15" target="57H5Bfn5HqLel8Yp6bTl-22">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="57H5Bfn5HqLel8Yp6bTl-15" target="57H5Bfn5HqLel8Yp6bTl-24">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-15" value="EnemyStatus" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="970" y="300" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-19" value="NoemalEnemyStatus&lt;div&gt;・DashSpeed&lt;/div&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="910" y="440" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-22" value="nokonokoStatus&lt;div&gt;・RushSpeed&lt;/div&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="440" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-24" value="BossStatus&lt;div&gt;・JumpPower&lt;/div&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1230" y="440" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-28" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="57H5Bfn5HqLel8Yp6bTl-26" target="57H5Bfn5HqLel8Yp6bTl-27">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-26" value="Stage&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;・ModelRender&lt;/span&gt;&lt;/div&gt;&lt;div&gt;・PhysicStaticObjectCollision&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;・CollisionObject&lt;/div&gt;&lt;div&gt;・position&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="110" y="550" width="180" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-48" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="57H5Bfn5HqLel8Yp6bTl-27" target="57H5Bfn5HqLel8Yp6bTl-29">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-27" value="Stage1&lt;div&gt;・StageStatus&lt;/div&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="70" y="770" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-29" value="Stage2" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="70" y="880" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-31" value="BossStage&lt;div&gt;・BossStageStatus&lt;/div&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="260" y="770" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-38" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="57H5Bfn5HqLel8Yp6bTl-26" target="57H5Bfn5HqLel8Yp6bTl-31">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="730" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-41" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="57H5Bfn5HqLel8Yp6bTl-35" target="57H5Bfn5HqLel8Yp6bTl-36">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-49" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="57H5Bfn5HqLel8Yp6bTl-35" target="57H5Bfn5HqLel8Yp6bTl-44">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-35" value="StageStatus&lt;div&gt;・落下判定&lt;/div&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="460" y="570" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-36" value="StageStatus&lt;div&gt;・goalFlag&lt;/div&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="400" y="700" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-44" value="BossStageStatus&lt;div&gt;・switchFlag&lt;/div&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="550" y="700" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-50" value="SoundManager&lt;div&gt;・GetFullPath()&lt;/div&gt;&lt;div&gt;・PlaySound()&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="850" y="590" width="130" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-55" value="" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="590" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="57H5Bfn5HqLel8Yp6bTl-56" value="StageManager" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="770" width="120" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
