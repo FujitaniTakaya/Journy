@@ -8,8 +8,10 @@ enum EnPlayerState {
 	enPlayerState_Jump,
 	enPlayerState_Num
 };
-namespace {
-	float ONE_FRAME = 1 / 60.0f;
+
+
+namespace GameInfo {
+	constexpr float ONE_FRAME = 1.0f / 60.0f;
 }
 
 
