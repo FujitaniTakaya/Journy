@@ -534,16 +534,6 @@
 //}
 //
 //
-//bool Player::IsMove() {
-//	for (int i = 0; i < 3; i++) {
-//		if (m_moveSpeed.v[i] != 0.0f) {
-//			return true;
-//		}
-//	}
-//	return false;
-//}
-//
-//
 //bool Player::IsRun() {
 //	if (!IsMove()) {
 //		return false;
@@ -553,48 +543,355 @@
 //	}
 //	return true;
 //}
+
+
+bool Player::Start() {
+	InitializeModel();
+	return true;
+}
+
+
+void Player::Update() {
+	Move();
+	Jump();
+
+	//アニメーションのスレッド	
+	animationThread().detach();
+
+	//アニメーション実行のため、毎フレーム更新
+	UpdateTRSInfo();
+}
+
+
+void Player::Render(RenderContext& rc) {
+	if (GetModelRender()) {
+		GetModelRender()->Draw(rc);
+	}
+}
+
+
+void Player::InitializeModel() {
+	for (int i = 0; i < enCharaState_Num; i++) {
+		const std::string filePath = PlayerInfo::playerInfo[i].GetAnimFullPath();
+
+		//アニメーションの読み込み
+		m_animationClips[i].Load(filePath.c_str());
+		//ループ設定
+		if (i == enCharaState_Jump) {
+			m_animationClips[i].SetLoopFlag(false);
+			continue;
+		}
+		m_animationClips[i].SetLoopFlag(true);
+	}
+
+
+	SetTRS(PlayerInfo::START_POS, Quaternion::Identity);
+	GetModelRender()->Init(PlayerInfo::UNITY_FILE_PATH, m_animationClips, enCharaState_Num, enModelUpAxisY);
+	GetCharacterController()->Init(PlayerInfo::CHARA_CON.x, PlayerInfo::CHARA_CON.y, GetPosition());
+
+	UpdateTRSInfo();
+}
+
+
+void Player::UpdateTRSInfo() {
+	//キャラコンに速度を加算して位置を更新
+	Vector3 pos =  GetCharacterController()->Execute(m_moveSpeed, GameInfo::ONE_FRAME);
+	SetPosition(pos);
+	//m_position = m_characterController.Execute(m_moveSpeed, GameInfo::ONE_FRAME);
+	//モデルの位置、回転、スケールを更新
+	GetModelRender()->SetPosition(GetPosition());
+	GetModelRender()->SetRotation(GetRotation());
+	GetModelRender()->Update();
+}
+
+
+void Player::Move() {
+	//x,zの移動速度を初期化
+	SetMoveSpeedXZ(0.0f, 0.0f);
+
+	Vector2 stickL;
+	stickL.x = g_pad[0]->GetLStickXF();
+	stickL.y = g_pad[0]->GetLStickYF();
+	//スティックの入力がなければ下の処理をしない
+	if (!IsStick(stickL)) {
+		return;
+	}
+
+	//カメラの前方向と右方向を取得
+	Vector3 forward = g_camera3D->GetForward();
+	Vector3 right = g_camera3D->GetRight();
+	//y成分を0にして水平移動のみにする
+	forward.y = 0.0f;
+	right.y = 0.0f;
+	
+	//移動ステートに応じたスピードを取得
+	const float speed = PlayerInfo::MoveInfo::MOVE_SPEED[m_moveState];
+
+	right *= stickL.x *= speed;
+	forward *= stickL.y *= speed;
+
+	AddMoveSpeed(right + forward);
+
+	Rotate();
+}
+
+
+void Player::Jump() {
+
+
+	//ジャンプしていれば
+	if (IsJump()) {
+		//地面についている時間をリセット
+		m_standingTime = 0.0f;
+
+		//重力を発生させる
+		AddGravity();
+		return;
+	}
+
+
+	//滞空時間をリセット
+	m_flyingTime = 0.0f;
+
+	//Y方向の移動速度を0にする
+	SetMoveSpeedY(0.0f);
+
+
+	//最初の段階のジャンプでなければ
+	if (m_jumpPowerState != enJumpPower_First) {
+
+
+		//次の段階のジャンプに切り替え可能か
+		if (CanNextJump()) {
+		
+			
+			//ジャンプ力状態を最初に戻す
+			m_jumpPowerState = enJumpPower_First;
+
+			//着地時間をリセット
+			m_standingTime = 0.0f;
+		}
+	}
+
+
+	//ジャンプボタンが押されていなければ
+	if (!g_pad[0]->IsTrigger(enButtonB)) {
+		return;
+	}
+
+
+	//現在のジャンプ力状態をもとにジャンプ力を設定
+	const float jumpPower = PlayerInfo::JumpInfo::JUMP_POWER[m_jumpPowerState];
+	//AddMoveSpeedY(jumpPower);
+	SetMoveSpeedY(jumpPower);
+	//ジャンプ力状態を更新
+	m_jumpPowerState = static_cast<EnJumpPower>((m_jumpPowerState + 1) % enJumpPower_Num);
+
+
+	//ジャンプ力状態が異常値であれば
+	if (m_jumpPowerState == int(INT_MAX)){
+		m_jumpPowerState = static_cast<EnJumpPower>(INT_MAX % enJumpPower_Num);
+	}	
+}
+
+
+void Player::ManageStateAndAnimation() {
+	
+	m_state = enCharaState_Idle;
+	//移動中であれば
+	if (IsMove()) {
+		m_state = enCharaState_Walk;
+		m_moveState = enMoveState_Walk;
+
+	}
+	//走っていれば
+	if (IsRun()) {
+		m_state = enCharaState_Run;
+		m_moveState = enMoveState_Run;
+	}
+	//地面についていなければ
+	if (IsJump()) {
+		m_state = enCharaState_Jump;
+	}
+	//アニメーション再生
+	const float animationSpeed = PlayerInfo::playerInfo[m_state].playAnimSpeed;
+	GetModelRender()->SetAnimationSpeed(animationSpeed);
+	GetModelRender()->PlayAnimation(m_state);
+}
+
+
+bool Player::CanNextJump() {
+	//次の段階のジャンプに切り替え可能か
+	if (m_standingTime <= PlayerInfo::JumpInfo::CAN_NEXT_JUMP_FRAME) {		
+		GameInfo::AddOneFrame(m_standingTime);
+		return false;
+	}
+	return true;
+}
+
+
+//void Player::Jump() {
+//
+//	//敵を倒した直後であれば
+//	if (IsKillEnemy()) {
+//		//敵を倒した後のジャンプ処理
+//		JumpAfterKilledEnemy();
+//		return;
+//	}
+//
+//	//ジャンプ可能な状態でなければ
+//	if (!CanJump()) {
+//		//何もしない
+//		return;
+//	}
+//	//次の段階のジャンプが可能でなければ
+//	if (m_canNextJump) {
+//		//次の段階のジャンプが不可能になれば
+//		if (MeasureNextJumpFrameCount()) {
+//			//ジャンプ状態を最初に戻す
+//			m_jumpState = enJumpPower_First;
+//			m_canNextJump = false;
+//			return;
+//		}
+//	}
+//	//ジャンプボタンが押されていなければ
+//	if (!g_pad[0]->IsTrigger(enButtonB)) {
+//		return;
+//	}
+//	//ジャンプ力を加算
+//	float jumpPower = MoveInfo::JUMP_POWER[m_jumpState];
+//	m_moveSpeed.y += jumpPower;
+//
+//	//ジャンプ状態を更新
+//	m_jumpState = static_cast<EnJumpPower>((m_jumpState + 1) % enJumpPower_Num);
+//	m_canNextJump = true;
+//	//最初の段階のジャンプでなければ
+//	if (m_jumpState != enJumpPower_First) {
+//		return;
+//	}
+//	m_canNextJump = false;
+//}
 //
 //
-//bool Player::IsStick(const Vector2& stick) {
-//	if (stick.x != 0.0f) {
-//		return true;
+//void Player::JumpAtk() {
+//	//ジャンプ中なら
+//	if (m_playerState == enPlayerState_Jump) {
+//		//当たり判定があれば
+//		if (m_playerAtkCollision) {
+//			//何もしない
+//			return;
+//		}
+//		//攻撃中でなければ
+//		if (!m_isAtk) {
+//			//攻撃コリジョン生成
+//			SetAtkCollision();
+//		}
 //	}
-//	if (stick.y != 0.0f) {
-//		return true;
+//	//ジャンプ中でなければ
+//	else {
+//		//攻撃コリジョンがなければ
+//		if (!m_playerAtkCollision) {
+//			//何もしない
+//			return;
+//		}
+//		//攻撃コリジョン削除
+//		delete m_playerAtkCollision;
+//		m_playerAtkCollision = nullptr;
+//		m_isAtk = false;
 //	}
-//	return false;
+//}
+//
+//
+//void Player::JumpAfterKilledEnemy() {
+//	//地面についていれば
+//	if (m_playerCharaCon.IsOnGround()) {
+//		//敵を倒したフラグをリセット
+//		SetFlagIsKillEnemy(false);
+//		return;
+//	}
+//	//次のジャンプまでの猶予時間を計測
+//	//規定時間たったら
+//	if (MeasureNextJumpFrameCount()) {
+//		//敵を倒したフラグをリセット
+//		SetFlagIsKillEnemy(false);
+//		//滞空時間をリセット
+//		m_flyingTime = 0.0f;
+//		//移動速度をリセット
+//		m_moveSpeed.y = 0.0f;
+//
+//		//ジャンプ力を加算
+//		float jumpPower = MoveInfo::JUMP_POWER[enJumpPower_First];
+//		m_moveSpeed.y += jumpPower;
+//		m_jumpState = enJumpPower_First;
+//		m_canNextJump = false;
+//
+//		return;
+//	}
+//	//ジャンプボタンが押されていなければ
+//	if (!g_pad[0]->IsTrigger(enButtonB)) {
+//		return;
+//	}
+//	//敵を倒したフラグをリセット
+//	SetFlagIsKillEnemy(false);
+//	//滞空時間をリセット
+//	m_flyingTime = 0.0f;
+//	//移動速度をリセット
+//	m_moveSpeed.y = 0.0f;
+//
+//	//ジャンプ力を加算
+//	float jumpPower = MoveInfo::JUMP_POWER[m_jumpState];
+//	m_moveSpeed.y += jumpPower;
+//	//ジャンプ状態を更新
+//	m_jumpState = static_cast<EnJumpPower>((m_jumpState + 1) % enJumpPower_Num);
+//	m_canNextJump = false;
+//}
+//
+//
+//bool Player::CanJump() {
+//	//地面についていなかったら
+//	if (!m_playerCharaCon.IsOnGround()) {
+//		m_flyingTime += GameInfo::ONE_FRAME;
+//		
+// 
+//		//重力を発生させる
+//		m_moveSpeed.y += MveInfo::GRAVITY * m_flyingTime;		
+// 
+//		return false;
+//	}
+//	//地面についているのでタイマーをリセット
+//	m_flyingTime = 0.0f;
+//	m_moveSpeed.y = 0.0f;
+//	return true;
+//}
+//
+//
+//bool Player::MeasureNextJumpFrameCount() {
+//	if (m_standingTime <= MoveInfo::CAN_NEXT_JUMP_FRAME) {
+//		m_standingTime += GameInfo::ONE_FRAME;
+//		return false;
+//	}
+//	//タイマーをリセット
+//	m_standingTime = 0.0f;
+//	return true;
+//}
+//
+//
+//bool Player::CanNextPowerJump() {
+//	//空中にいるときにジャンプボタンを押したら
+//	if (!CanJump()) {
+//		if (g_pad[0]->IsTrigger(enButtonB)) {
+//			m_jumpState = enJumpPower_First;
+//		}
+//		//ジャンプさせない
+//		return false;
+//	}
+//	//地面についている時間をカウント
+//	if (MeasureNextJumpFrameCount()) {
+//		//ジャンプパワーを戻す
+//		m_jumpState = enJumpPower_First;
+//		//ジャンプさせない
+//		return false;
+//	}
+//	return true;
 //}
 
-
-namespace {
-	//ファイルの場所
-	const std::string PLAYER_FILEPATH = "Assets/animData/";
-	//拡張子
-	const std::string PLAYER_EXTENSTION = ".tka";
-
-	struct PlayerAnimInfo{
-		//ファイル名
-		std::string fileName;
-
-		//ファイルパスを取得
-		std::string GetModelFullPath()const {
-			return PLAYER_FILEPATH + fileName + PLAYER_EXTENSTION;
-		}
-	};
-
-
-	const PlayerAnimInfo PlayerInfo[enPlayerState_Num] = {
-		"idle",	"walk" , "run" , "jump"
-	};
-	const char* UNITY_MODEL = "Assets/modelData/unityChan.tkm";
-
-	const Vector2 CHARA_CON = { 15.0f, 65.0f };
-	const Vector3 START_POS = { 100.0f, 0.0f, 100.0f };
-
-	
-	
-}
-
-void Player::SetPlayerModel() {
-
-}

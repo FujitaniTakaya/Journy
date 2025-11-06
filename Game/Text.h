@@ -1,17 +1,20 @@
 #pragma once
 #include "stdint.h"
 
-enum EnPlayerState {
-	enPlayerState_Idle,
-	enPlayerState_Walk,
-	enPlayerState_Run,
-	enPlayerState_Jump,
-	enPlayerState_Num
+enum EnCharaState {
+	enCharaState_Idle,
+	enCharaState_Walk,
+	enCharaState_Run,
+	enCharaState_Jump,
+	enCharaState_Num
 };
 
 
 namespace GameInfo {
 	constexpr float ONE_FRAME = 1.0f / 60.0f;
+	static inline void AddOneFrame(float& frameCount) {
+		frameCount += ONE_FRAME;
+	}
 }
 
 

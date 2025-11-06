@@ -1,6 +1,7 @@
 #pragma once
 #include "Character.h"
 
+
 //#include "Text.h"
 //#include <coroutine>
 //#include <optional>
@@ -261,14 +262,147 @@
 //};
 
 
+enum EnMoveState {
+	enMoveState_Walk,
+	enMoveState_Run,
+	enMoveState_Num
+};
+
+
+enum EnJumpPower {
+	enJumpPower_First,
+	enJumpPower_Second,
+	enJumpPower_Third,
+	enJumpPower_Num
+};;
+
+
+namespace PlayerInfo {
+	//ファイルの場所
+	const std::string PLAYER_FILEPATH = "Assets/animData/";
+	//拡張子
+	const std::string PLAYER_EXTENSTION = ".tka";
+
+	struct PlayerAnimInfo {
+		//ファイル名
+		std::string fileName;
+
+		float playAnimSpeed;
+
+		//ファイルパスを取得
+		std::string GetAnimFullPath()const {
+			return PLAYER_FILEPATH + fileName + PLAYER_EXTENSTION;
+		}
+	};
+
+
+	const PlayerAnimInfo playerInfo[enCharaState_Num] = {
+		{"idle", 1.0f},
+		{"walk", 1.2f},
+		{"run", 1.5f},
+		{"jump",1.0f},
+	};
+
+	const float ANIMATION_SPEED = 1.5f;
+
+	const char* const UNITY_FILE_PATH = "Assets/modelData/unityChan.tkm";
+
+	const Vector2 CHARA_CON = { 15.0f, 65.0f };
+	const Vector3 START_POS = { 100.0f, 0.0f, 100.0f };
+
+
+	namespace MoveInfo {
+		const float MOVE_SPEED[enMoveState_Num] = {
+			200.0f, 400.0f
+		};
+	}
+
+
+	namespace JumpInfo {
+		const float JUMP_POWER[enJumpPower_Num] = {
+			200.0f, 400.0f, 600.0f
+		};
+
+
+		const float CAN_NEXT_JUMP_FRAME = 0.1f;					//次の段のジャンプに切り替えれるまでの猶予時間
+		const float MAX_FLYING_TIME = 0.5f;						//重力加速の最大フレーム数
+		const float GRAVITY = -49.0f;							//重力加速度
+	}
+}
+
+
+
+/**
+* @brief プレイヤークラス
+*/
 class Player : public Character {
+private:
+	AnimationClip m_animationClips[enCharaState_Num];
+	EnCharaState m_state = enCharaState_Num;
+	EnMoveState m_moveState = enMoveState_Num;
+	EnJumpPower m_jumpPowerState = enJumpPower_First;
+
+	float m_flyingTime = 0.0f;
+	float m_standingTime = 0.0f;
+
+
 public:
-	Player();
-	~Player();
+	Player(){}
+	~Player(){}
 	bool Start()override;
 	void Update()override;
 	void Render(RenderContext& rc)override;
 
+
+	/** このクラスの中だけで使う	*/
 private:
-	void SetPlayerModel();
+	/**	モデルの初期化	*/
+	void InitializeModel();
+
+	/**	モデル情報の更新	*/
+	void UpdateTRSInfo();
+	
+
+
+	/**	行動系	*/
+private:
+	void Move();
+
+	void Jump();
+	
+	inline void AddGravity() {
+		//滞空時間を加算
+		GameInfo::AddOneFrame(m_flyingTime);
+		m_flyingTime = min(m_flyingTime, PlayerInfo::JumpInfo::MAX_FLYING_TIME);
+		const float gravity = PlayerInfo::JumpInfo::GRAVITY * m_flyingTime;
+		//重力加算
+		AddMoveSpeedY(gravity);
+	}
+
+	inline void Rotate() {	
+		m_rotation.SetRotationYFromDirectionXZ(GetMoveSpeed());
+	}
+
+	inline std::thread animationThread() {
+		return std::thread([this]() {
+			this->ManageStateAndAnimation();
+			});
+	}
+
+	void ManageStateAndAnimation();
+
+	/**	行動フラグ系	*/
+private:
+
+	inline bool IsRun() {
+		if (!IsMove()) {
+			return false;
+		}
+		if (!g_pad[0]->IsPress(enButtonA)) {
+			return false;
+		}
+		return true;
+	}
+
+	bool CanNextJump();
 };
