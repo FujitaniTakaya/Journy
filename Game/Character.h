@@ -114,8 +114,7 @@ protected:
 		Vector3 pos = GetCharacterController()->Execute(m_moveSpeed, GameInfo::ONE_FRAME);
 		SetPosition(pos);
 		//モデルの位置、回転、スケールを更新
-		GetModelRender()->SetPosition(GetPosition());
-		GetModelRender()->SetRotation(GetRotation());
+		GetModelRender()->SetTRS(GetPosition(), GetRotation(), GetScale());
 		GetModelRender()->Update();
 	}
 
