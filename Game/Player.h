@@ -296,14 +296,14 @@ namespace PlayerInfo {
 	};
 
 
-	const PlayerAnimInfo playerInfo[enCharaState_Num] = {
+	const PlayerAnimInfo playerAnimInfo[enCharaState_Num] = {
 		{"idle", 1.0f},
 		{"walk", 1.2f},
 		{"run", 1.5f},
 		{"jump",1.0f},
 	};
 
-	const float ANIMATION_SPEED = 1.5f;
+	constexpr float ANIMATION_SPEED = 1.5f;
 
 	const char* const UNITY_FILE_PATH = "Assets/modelData/unityChan.tkm";
 
@@ -312,21 +312,23 @@ namespace PlayerInfo {
 
 
 	namespace MoveInfo {
-		const float MOVE_SPEED[enMoveState_Num] = {
+		constexpr float MOVE_SPEED[enMoveState_Num] = {
 			200.0f, 400.0f
 		};
 	}
 
 
 	namespace JumpInfo {
-		const float JUMP_POWER[enJumpPower_Num] = {
+		constexpr float JUMP_POWER[enJumpPower_Num] = {
 			200.0f, 400.0f, 600.0f
 		};
 
+		constexpr float JUMP_ANIMATION_SPEED[enJumpPower_Num] = {
+			1.0f, 0.8f, 0.6f
+		};
 
-		const float CAN_NEXT_JUMP_FRAME = 0.1f;					//次の段のジャンプに切り替えれるまでの猶予時間
-		const float MAX_FLYING_TIME = 0.5f;						//重力加速の最大フレーム数
-		const float GRAVITY = -49.0f;							//重力加速度
+
+		constexpr float CAN_NEXT_JUMP_FRAME = 0.1f;					//次の段のジャンプに切り替えれるまでの猶予時間
 	}
 }
 
@@ -337,12 +339,12 @@ namespace PlayerInfo {
 */
 class Player : public Character {
 private:
+	CollisionObject* m_atkCollision = nullptr;
 	AnimationClip m_animationClips[enCharaState_Num];
 	EnCharaState m_state = enCharaState_Num;
 	EnMoveState m_moveState = enMoveState_Num;
 	EnJumpPower m_jumpPowerState = enJumpPower_First;
 
-	float m_flyingTime = 0.0f;
 	float m_standingTime = 0.0f;
 
 
@@ -355,13 +357,21 @@ public:
 
 
 	/** このクラスの中だけで使う	*/
-private:
-	/**	モデルの初期化	*/
-	void InitializeModel();
 
-	/**	モデル情報の更新	*/
-	void UpdateTRSInfo();
-	
+	/**	モデルの初期化	*/
+private:
+	void InitializeCharacter()override;
+	void InitializeModel();	
+	void InitializeCollisionObject();
+
+
+	/**	コリジョン情報更新系	*/
+private:
+	inline void UpdateAtkCollisionInfo() {
+		m_atkCollision->SetPosition(GetPosition());
+		m_atkCollision->SetRotation(GetRotation());
+		m_atkCollision->Update();
+	}
 
 
 	/**	行動系	*/
@@ -370,18 +380,9 @@ private:
 
 	void Jump();
 	
-	inline void AddGravity() {
-		//滞空時間を加算
-		GameInfo::AddOneFrame(m_flyingTime);
-		m_flyingTime = min(m_flyingTime, PlayerInfo::JumpInfo::MAX_FLYING_TIME);
-		const float gravity = PlayerInfo::JumpInfo::GRAVITY * m_flyingTime;
-		//重力加算
-		AddMoveSpeedY(gravity);
-	}
+	void TripleJump();
 
-	inline void Rotate() {	
-		m_rotation.SetRotationYFromDirectionXZ(GetMoveSpeed());
-	}
+	void JumpAtk();	
 
 	inline std::thread animationThread() {
 		return std::thread([this]() {

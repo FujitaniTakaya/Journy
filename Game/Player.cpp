@@ -546,7 +546,7 @@
 
 
 bool Player::Start() {
-	InitializeModel();
+	InitializeCharacter();
 	return true;
 }
 
@@ -558,8 +558,10 @@ void Player::Update() {
 	//アニメーションのスレッド	
 	animationThread().detach();
 
-	//アニメーション実行のため、毎フレーム更新
+	//更新
 	UpdateTRSInfo();
+	UpdateCollisionInfo();
+	UpdateAtkCollisionInfo();
 }
 
 
@@ -570,9 +572,15 @@ void Player::Render(RenderContext& rc) {
 }
 
 
+void Player::InitializeCharacter() {
+	InitializeModel();
+	InitializeCollisionObject();
+
+}
+
 void Player::InitializeModel() {
 	for (int i = 0; i < enCharaState_Num; i++) {
-		const std::string filePath = PlayerInfo::playerInfo[i].GetAnimFullPath();
+		const std::string filePath = PlayerInfo::playerAnimInfo[i].GetAnimFullPath();
 
 		//アニメーションの読み込み
 		m_animationClips[i].Load(filePath.c_str());
@@ -588,26 +596,27 @@ void Player::InitializeModel() {
 	SetTRS(PlayerInfo::START_POS, Quaternion::Identity);
 	GetModelRender()->Init(PlayerInfo::UNITY_FILE_PATH, m_animationClips, enCharaState_Num, enModelUpAxisY);
 	GetCharacterController()->Init(PlayerInfo::CHARA_CON.x, PlayerInfo::CHARA_CON.y, GetPosition());
-
 	UpdateTRSInfo();
 }
 
 
-void Player::UpdateTRSInfo() {
-	//キャラコンに速度を加算して位置を更新
-	Vector3 pos =  GetCharacterController()->Execute(m_moveSpeed, GameInfo::ONE_FRAME);
-	SetPosition(pos);
-	//m_position = m_characterController.Execute(m_moveSpeed, GameInfo::ONE_FRAME);
-	//モデルの位置、回転、スケールを更新
-	GetModelRender()->SetPosition(GetPosition());
-	GetModelRender()->SetRotation(GetRotation());
-	GetModelRender()->Update();
+void Player::InitializeCollisionObject() {	
+	//キャラクター当たり判定用のカプセルコリジョンを作成
+	InitCollisionObject();
+	GetCollisionObject()->CreateCapsule(GetPosition(), GetRotation(), PlayerInfo::CHARA_CON.x * 1.01f, PlayerInfo::CHARA_CON.y * 1.01f);
+	UpdateCollisionInfo();
+
+	m_atkCollision = new CollisionObject;
+	//攻撃用のボックスコリジョンを作成
+	m_atkCollision->CreateBox(GetPosition(), GetRotation(), Vector3(40.0f, 10.0f, 30.0f));
+	m_atkCollision->SetIsEnable(false);
+	UpdateAtkCollisionInfo();
 }
 
 
 void Player::Move() {
 	//x,zの移動速度を初期化
-	SetMoveSpeedXZ(0.0f, 0.0f);
+	SetMoveSpeed(0.0f, GetMoveSpeed().y, 0.0f);
 
 	Vector2 stickL;
 	stickL.x = g_pad[0]->GetLStickXF();
@@ -630,13 +639,23 @@ void Player::Move() {
 	right *= stickL.x *= speed;
 	forward *= stickL.y *= speed;
 
-	AddMoveSpeed(right + forward);
+	//加算する移動速度を決定
+	const Vector3 addSpeed = right + forward;
 
-	Rotate();
+	//移動速度を計算して加算
+	Add(addSpeed, m_moveSpeed);
+
+	RotateToMoveDirection();
 }
 
 
 void Player::Jump() {
+	TripleJump();
+	JumpAtk();
+}
+
+
+void Player::TripleJump() {
 
 
 	//ジャンプしていれば
@@ -653,8 +672,9 @@ void Player::Jump() {
 	//滞空時間をリセット
 	m_flyingTime = 0.0f;
 
+	
 	//Y方向の移動速度を0にする
-	SetMoveSpeedY(0.0f);
+	SetMoveSpeed(GetMoveSpeed().x, 0.0f, GetMoveSpeed().z);
 
 
 	//最初の段階のジャンプでなければ
@@ -663,8 +683,8 @@ void Player::Jump() {
 
 		//次の段階のジャンプに切り替え可能か
 		if (CanNextJump()) {
-		
-			
+
+
 			//ジャンプ力状態を最初に戻す
 			m_jumpPowerState = enJumpPower_First;
 
@@ -682,16 +702,26 @@ void Player::Jump() {
 
 	//現在のジャンプ力状態をもとにジャンプ力を設定
 	const float jumpPower = PlayerInfo::JumpInfo::JUMP_POWER[m_jumpPowerState];
-	//AddMoveSpeedY(jumpPower);
-	SetMoveSpeedY(jumpPower);
+	Add(jumpPower, m_moveSpeed.y);
+
+
 	//ジャンプ力状態を更新
 	m_jumpPowerState = static_cast<EnJumpPower>((m_jumpPowerState + 1) % enJumpPower_Num);
 
 
 	//ジャンプ力状態が異常値であれば
-	if (m_jumpPowerState == int(INT_MAX)){
+	if (m_jumpPowerState == int(INT_MAX)) {
 		m_jumpPowerState = static_cast<EnJumpPower>(INT_MAX % enJumpPower_Num);
-	}	
+	}
+}
+
+
+void Player::JumpAtk() {
+	if (!m_atkCollision) {
+		return;
+	}
+	//ジャンプ状態に応じて攻撃コリジョンの有効無効を切り替え
+	m_atkCollision->SetIsEnable(IsJump());
 }
 
 
@@ -714,7 +744,14 @@ void Player::ManageStateAndAnimation() {
 		m_state = enCharaState_Jump;
 	}
 	//アニメーション再生
-	const float animationSpeed = PlayerInfo::playerInfo[m_state].playAnimSpeed;
+	
+	float animationSpeed = PlayerInfo::playerAnimInfo[m_state].playAnimSpeed;
+	//ジャンプ中であれば
+	if (m_state == enCharaState_Jump) {
+		//ジャンプ力状態に応じてアニメーション速度を変更
+		animationSpeed *= PlayerInfo::JumpInfo::JUMP_ANIMATION_SPEED[m_jumpPowerState];
+	}
+
 	GetModelRender()->SetAnimationSpeed(animationSpeed);
 	GetModelRender()->PlayAnimation(m_state);
 }
