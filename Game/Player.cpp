@@ -566,9 +566,7 @@ void Player::Update() {
 
 
 void Player::Render(RenderContext& rc) {
-	if (GetModelRender()) {
-		GetModelRender()->Draw(rc);
-	}
+	if (GetModelRender()) GetModelRender()->Draw(rc);
 }
 
 
@@ -592,10 +590,11 @@ void Player::InitializeModel() {
 		m_animationClips[i].SetLoopFlag(true);
 	}
 
+	const Vector2 charConScl = PlayerInfo::CHARA_CON;
 
 	SetTRS(PlayerInfo::START_POS, Quaternion::Identity);
 	GetModelRender()->Init(PlayerInfo::UNITY_FILE_PATH, m_animationClips, enCharaState_Num, enModelUpAxisY);
-	GetCharacterController()->Init(PlayerInfo::CHARA_CON.x, PlayerInfo::CHARA_CON.y, GetPosition());
+	GetCharacterController()->Init(charConScl.x, charConScl.y, GetPosition());
 	UpdateTRSInfo();
 }
 
@@ -603,7 +602,9 @@ void Player::InitializeModel() {
 void Player::InitializeCollisionObject() {	
 	//キャラクター当たり判定用のカプセルコリジョンを作成
 	InitCollisionObject();
-	GetCollisionObject()->CreateCapsule(GetPosition(), GetRotation(), PlayerInfo::CHARA_CON.x * 1.01f, PlayerInfo::CHARA_CON.y * 1.01f);
+
+	const Vector2 charConScl = PlayerInfo::CHARA_CON;
+	GetCollisionObject()->CreateCapsule(GetPosition(), GetRotation(), charConScl.x * 1.01f, charConScl.y * 1.01f);
 	UpdateCollisionInfo();
 
 	m_atkCollision = new CollisionObject;
