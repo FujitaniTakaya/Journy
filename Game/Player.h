@@ -1,6 +1,6 @@
 #pragma once
 #include "Character.h"
-
+#include "Status.h"
 
 //#include "Text.h"
 //#include <coroutine>
@@ -261,95 +261,23 @@
 //	float m_invincibleFrameCount = 0.0f;
 //};
 
-
-enum EnMoveState {
-	enMoveState_Walk,
-	enMoveState_Run,
-	enMoveState_Num
-};
-
-
-enum EnJumpPower {
-	enJumpPower_First,
-	enJumpPower_Second,
-	enJumpPower_Third,
-	enJumpPower_Num
-};;
-
-
-namespace PlayerInfo {
-	//ファイルの場所
-	const std::string PLAYER_FILEPATH = "Assets/animData/";
-	//拡張子
-	const std::string PLAYER_EXTENSTION = ".tka";
-
-	struct PlayerAnimInfo {
-		//ファイル名
-		std::string fileName;
-
-		float playAnimSpeed;
-
-		//ファイルパスを取得
-		std::string GetAnimFullPath()const {
-			return PLAYER_FILEPATH + fileName + PLAYER_EXTENSTION;
-		}
-	};
-
-
-	const PlayerAnimInfo playerAnimInfo[enCharaState_Num] = {
-		{"idle", 1.0f},
-		{"walk", 1.2f},
-		{"run", 1.5f},
-		{"jump",1.0f},
-	};
-
-	constexpr float ANIMATION_SPEED = 1.5f;
-
-	const char* const UNITY_FILE_PATH = "Assets/modelData/unityChan.tkm";
-
-	const Vector2 CHARA_CON = { 15.0f, 65.0f };
-	const Vector3 START_POS = { 100.0f, 0.0f, 100.0f };
-
-
-	namespace MoveInfo {
-		constexpr float MOVE_SPEED[enMoveState_Num] = {
-			200.0f, 400.0f
-		};
-	}
-
-
-	namespace JumpInfo {
-		constexpr float JUMP_POWER[enJumpPower_Num] = {
-			200.0f, 400.0f, 600.0f
-		};
-
-		constexpr float JUMP_ANIMATION_SPEED[enJumpPower_Num] = {
-			1.0f, 0.8f, 0.6f
-		};
-
-
-		constexpr float CAN_NEXT_JUMP_FRAME = 0.1f;					//次の段のジャンプに切り替えれるまでの猶予時間
-	}
-}
-
-
-
 /**
 * @brief プレイヤークラス
 */
 class Player : public Character {
 private:
+	std::unique_ptr<PlayerStatus> m_status;
 	CollisionObject* m_atkCollision = nullptr;
-	AnimationClip m_animationClips[enCharaState_Num];
-	EnCharaState m_state = enCharaState_Num;
-	EnMoveState m_moveState = enMoveState_Num;
-	EnJumpPower m_jumpPowerState = enJumpPower_First;
+	std::array<AnimationClip, static_cast<size_t>(EnCharState::enCharState_Num)> m_animationClips;
+	EnCharState m_state = EnCharState::enCharState_Idle;
+	EnMoveState m_moveState = EnMoveState::enMoveState_Walk;
+	EnJumpPower m_jumpPowerState = EnJumpPower::enJumpPower_First;
 
-	float m_standingTime = 0.0f;
+	
 
 
 public:
-	Player(){}
+	Player() : m_status(std::make_unique<PlayerStatus>()) {}
 	~Player(){}
 	bool Start()override;
 	void Update()override;
@@ -363,7 +291,7 @@ private:
 	void InitializeCharacter()override;
 	void InitializeModel();	
 	void InitializeCollisionObject();
-
+	void InitializeStatusInfo();
 
 	/**	コリジョン情報更新系	*/
 private:
@@ -373,6 +301,10 @@ private:
 		m_atkCollision->Update();
 	}
 
+	/**	ステータス取得*/
+private:
+	//inline PlayerStatus& GetStatus() { return *m_status; }
+	//inline const PlayerStatus& GetStatus() const { return *m_status; }
 
 	/**	行動系	*/
 private:
@@ -384,26 +316,25 @@ private:
 
 	void JumpAtk();	
 
-	inline std::thread animationThread() {
-		return std::thread([this]() {
-			this->ManageStateAndAnimation();
-			});
-	}
-
 	void ManageStateAndAnimation();
 
 	/**	行動フラグ系	*/
 private:
 
 	inline bool IsRun() {
-		if (!IsMove()) {
-			return false;
-		}
-		if (!g_pad[0]->IsPress(enButtonA)) {
-			return false;
-		}
+		if (IsJump() || !IsMove() || !g_pad[0]->IsPress(enButtonA)) return false;
+
 		return true;
 	}
 
-	bool CanNextJump();
+
+private:
+	/**	ジャンプパワーステートの調整*/
+	inline const void AdjustNextJumpState() {
+		m_jumpPowerState = static_cast<EnJumpPower>((static_cast<int>(m_jumpPowerState) + 1) % static_cast<int>(EnJumpPower::enJumpPower_Num));
+		if (m_jumpPowerState == EnJumpPower::enJumpPower_Num) {
+			m_jumpPowerState = EnJumpPower::enJumpPower_First;
+		}
+
+	}
 };
