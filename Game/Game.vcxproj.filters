@@ -27,10 +27,10 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="Stage.h" />
     <ClInclude Include="Player.h" />
-    <ClInclude Include="Text.h" />
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="GameCamera.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="Character.h" />
+    <ClInclude Include="Status.h" />
   </ItemGroup>
 </Project>
