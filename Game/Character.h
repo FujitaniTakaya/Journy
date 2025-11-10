@@ -1,17 +1,16 @@
 #pragma once
 #include <stdint.h>
-#include "Text.h"
-
-
-namespace Gravity {
-	constexpr float MAX_FLYING_TIME = 0.5f;						//重力加速の最大フレーム数
-	constexpr float GRAVITY = -49.0f;							//重力加速度
-}
+#include "Status.h"
+#include "memory.h"
 
 
 class Character : public IGameObject
 {
+private:
+	std::unique_ptr<GameStatus> m_status = nullptr;
+
 protected:
+	Vector3 m_firstPos = Vector3::Zero;
 	Vector3 m_position = Vector3::Zero;
 	Vector3 m_scale = Vector3::One;
 	Quaternion m_rotation = Quaternion::Identity;
@@ -21,11 +20,9 @@ protected:
 	ModelRender m_modelRender;
 	//std::vector<AnimationClip> m_animationClips;
 
-	float m_flyingTime = 0.0f;
-
 
 public:
-	Character(){}
+	Character() : m_status(std::make_unique<GameStatus>()) {}
 	~Character(){}
 
 	virtual bool Start()override { return true; }
@@ -43,9 +40,11 @@ private:
 
 	/** 位置情報などのゲッター・セッター系 */
 public:
+	inline const Vector3& GetFirstPosition() const { return m_firstPos; }
+	inline void SetFirstPosition(const Vector3& pos) { m_position = m_firstPos = pos; }
+
 	inline const Vector3& GetPosition() const { return m_position; }
 	inline void SetPosition(const Vector3& pos) { m_position = pos; }
-	inline void SetPosition(const float& x, const float& y, const float& z) { SetPosition({ x, y, z }); }
 
 	inline const Vector3& GetScale() const { return m_scale; }
 	inline void SetScale(const Vector3& scale) { m_scale = scale; }
@@ -53,7 +52,7 @@ public:
 	inline const Quaternion& GetRotation() const { return m_rotation; }
 	inline void SetRotation(const Quaternion& rot) { m_rotation = rot; }
 
-	inline void SetTRS(const Vector3& pos = Vector3::Zero, const Quaternion& rot = Quaternion::Identity, const Vector3& scale = Vector3::Zero) {
+	inline void SetTRS(const Vector3& pos = Vector3::Zero, const Quaternion& rot = Quaternion::Identity, const Vector3& scale = Vector3::One) {
 		SetPosition(pos);
 		SetRotation(rot);
 		SetScale(scale);
@@ -61,13 +60,6 @@ public:
 
 	inline const Vector3& GetMoveSpeed() const { return m_moveSpeed; }
 	inline void SetMoveSpeed(const Vector3& speed) { m_moveSpeed = speed; }
-	inline void SetMoveSpeed(const float& x, const float& y, const float& z) { SetMoveSpeed({ x, y, z }); }
-
-
-
-	inline void Add(const Vector3& add, Vector3& m_moveSpeed) { m_moveSpeed += add; }
-	inline void Add(const float add, float& m_moveSpeed) { m_moveSpeed += add; }
-	
 
 	/** 当たり判定系 */
 public:
@@ -94,14 +86,14 @@ public:
 	}
 
 	inline bool IsMove() {
-		if (GetMoveSpeed().x != 0.0f || GetMoveSpeed().y != 0.0f || GetMoveSpeed().z != 0.0f) {
+		if (m_moveSpeed.x != 0.0f || m_moveSpeed.y != 0.0f || m_moveSpeed.z != 0.0f) {
 			return true;
 		}
 		return false;
 	}
 
 	inline bool IsJump() {
-		if (!GetCharacterController()->IsOnGround()) {
+		if (!m_characterController.IsOnGround()) {
 			return true;
 		}
 		return false;
@@ -111,11 +103,11 @@ public:
 protected:
 	inline void UpdateTRSInfo() {
 		//キャラコンに速度を加算して位置を更新
-		Vector3 pos = GetCharacterController()->Execute(m_moveSpeed, GameInfo::ONE_FRAME);
-		SetPosition(pos);
+		m_position = m_characterController.Execute(m_moveSpeed, GameStatus::AddOneFrame());
+		
 		//モデルの位置、回転、スケールを更新
-		GetModelRender()->SetTRS(GetPosition(), GetRotation(), GetScale());
-		GetModelRender()->Update();
+		m_modelRender.SetTRS(m_position, m_rotation, m_scale);
+		m_modelRender.Update();
 	}
 
 
@@ -123,27 +115,27 @@ protected:
 		if (!GetCollisionObject()) {
 			return;
 		}
-		GetCollisionObject()->SetIsEnable(true);
-		GetCollisionObject()->SetPosition(GetPosition());
-		GetCollisionObject()->SetRotation(GetRotation());
+		m_characterCollision->SetIsEnable(true);
+		m_characterCollision->SetPosition(m_position);
+		m_characterCollision->SetRotation(m_rotation);
 	}
 
+
+	/**	ステータス取得*/
+private:
+	inline GameStatus& GetGameStatus() {return *m_status;}
 
 	/**	重力処理	*/
 protected:
 	inline void AddGravity() {
-		//滞空時間を加算
-		GameInfo::AddOneFrame(m_flyingTime);
-		m_flyingTime = min(m_flyingTime, Gravity::MAX_FLYING_TIME);
-		const float gravity = Gravity::GRAVITY * m_flyingTime;
 		//重力加算
-		Add(gravity, m_moveSpeed.y);
+		m_moveSpeed.y += m_status->GetGravity();
 	}
 
 
 	/**	移動方向に回転	*/
 protected:
 	inline void RotateToMoveDirection() {
-		m_rotation.SetRotationYFromDirectionXZ(GetMoveSpeed());
+		m_rotation.SetRotationYFromDirectionXZ(m_moveSpeed);
 	}
 };
