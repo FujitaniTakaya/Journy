@@ -1,6 +1,6 @@
 #pragma once
 #include "Character.h"
-#include "Text.h"
+#include "Status.h"
 #include <coroutine>
 #include <optional>
 
@@ -215,11 +215,100 @@
 //};
 
 
+class Player;
+
 class Enemy : public Character {
+private:
+	Player* m_player = nullptr;								//プレイヤーのポインタ
+
+	EnemyStatus m_status;
+
+protected:	
+	Vector3 m_toMovePos = Vector3::Zero;
+	EnEnemy m_enemyType = EnEnemy::enEnemy_Num;
+	EnEnemyRot m_enemyRotDir = EnEnemyRot::enEnemyRot_Num;
+	bool m_isWait = true;
+
+
+
 public:
-	Enemy();
-	~Enemy();
+	Enemy() {}
+	~Enemy() {}
+	virtual bool Start()override { return true; }
+	virtual void Update() override {};
+	void Render(RenderContext& rc)override;
+
+	/**	それぞれのスタート処理で呼び出す関数*/
+protected:
+	void InitializeCharacter() override;
+
+
+	/**	初期化する関数たち*/
+private:
+	void InitializeModel();
+
+	void InitializeCollisionObject();
+
+protected:
+	inline void SetEnemyType(const EnEnemy enemyType) { m_enemyType = enemyType; }
+	inline const EnEnemy& GetEnemyType()const { return m_enemyType; }
+
+
+	/**	エネミーの行動処理*/
+protected:
+	void Move();
+
+	/**	ランダムウォーク系処理*/
+private:
+	void RandomWalk();
+
+	inline void DecideToMovePos() {
+		m_toMovePos.x = rand() % 401 - 200;
+		m_toMovePos.z = rand() % 401 - 200;
+		m_toMovePos += GetFirstPosition();
+		m_toMovePos.y = 0.0f;
+	}
+
+	inline void RandomWait() {
+		m_isWait= true;
+		int waitTime = rand() % 3001 + 300;
+		std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
+		m_isWait = false;
+	}
+
+
+	/**	プレイヤーに追従*/
+private:
+	void ChasePlayer();
+
+
+	/** ランダムウォークフラグゲッター・セッター*/
+private:
+	inline bool IsBeingToMovePos()const {
+		Vector3 dif = m_toMovePos - m_position;
+		if (dif.Length() >= m_status.GetWalkSpeed(m_enemyType) * 1.2) return false;
+
+		return true;
+	}
+
+	inline const bool IsWait()const { return m_isWait; }
+};
+
+
+class Normal : public Enemy {
+public:
 	bool Start()override;
-	void Update() override;
-	void Render(RenderContext& rc) override;
+	void Update()override;
+};
+
+class Gimmick : public Enemy {
+public:
+	bool Start()override;
+	void Update()override;
+};
+
+class Boss : public Enemy {
+public:
+	bool Start()override;
+	void Update()override;
 };

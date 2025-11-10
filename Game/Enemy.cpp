@@ -4,47 +4,7 @@
 #include <random>
 #include <thread>
 
-//namespace {
-//	//ファイルの場所
-//	const std::string FILE_PATH = "Assets/enemy/";
-//	//拡張子
-//	const std::string FILE_EXTENSTION = ".tkm";
-//
-//	struct EnemyInfo {
-//		//フォルダ名
-//		std::string folderName = "folderName";
-//		//ファイル名
-//		std::string fileName = "fileName";
-//		//モデルのスケール
-//		Vector3 modelScale;
-//		//キャラコンのスケール
-//		Vector2 charConScale;
-//
-//		/// <summary>
-//		/// エネミーモデルのファイルパスを取得
-//		/// </summary>
-//		const std::string GetModelFullPath()const {
-//			return FILE_PATH + folderName + fileName + FILE_EXTENSTION;
-//		}
-//	};
-//
-//	/// <summary>
-//	/// エネミー情報の配列
-//	/// </summary>
-//	const EnemyInfo EnemiesModel[static_cast<int>(EnEnemy::enEnemy_Num)] = {
-//		{"normalEnemy/", "NormalEnemy", {3.0f, 3.0f, 3.5f}, {25.0f, 20.0f}},
-//		{ "gimmickEnemy/","GimmickEnemy", {2.8f, 2.0f, 2.8f}, {25.0f, 30.0f}},
-//		{ "bossEnemy/","BossEnemy" , {1.0f, 1.2f, 1.0f}, {50.0f, 45.0f}}
-//	};
-//
-//	const float WALK_SPEED = 40.0f;			//歩くスピード
-//	const float CHASE_SPEED = 60.0f;		//プレイヤーを追従するスピード
-//											
-//	const float ROTATE_SPEED = 1.5f;		//回転するスピード
-//											
-//											
-//	const float FRONT_ANGLE = 0.9999f;		//正面方向の許容値(コサイン値)
-//}
+
 //
 //
 //
@@ -437,35 +397,148 @@
 //}
 
 
+bool Normal::Start() {
+	m_enemyType = EnEnemy::enEnemy_Normal;
+	InitializeCharacter();
+	return true;
+}
 
-namespace {
-	//ファイルの場所
-	const std::string FILE_PATH = "Assets/enemy/";
-	//拡張子
-	const std::string FILE_EXTENSTION = ".tkm";
 
-	struct EnemyInfo {
-		//ファイル名
-		std::string fileName = "fileName";
-		//モデルのスケール
-		Vector3 modelScale;
-		//キャラコンのスケール
-		Vector2 charConScale;
+bool Gimmick::Start() {
+	m_enemyType = EnEnemy::enEnemy_Gimmick;
+	InitializeCharacter();
+	return true;
+}
 
-		/// <summary>
-		/// エネミーモデルのファイルパスを取得
-		/// </summary>
-		const std::string GetModelFullPath()const {
-			return FILE_PATH + fileName + FILE_EXTENSTION;
+
+bool Boss::Start() {
+	m_enemyType = EnEnemy::enEnemy_Boss;
+	InitializeCharacter();
+	return true;
+}
+
+
+void Normal::Update() {
+	Move();
+	UpdateTRSInfo();
+}
+
+
+void Gimmick::Update() {
+	Move();
+	UpdateTRSInfo();
+}
+
+
+void Boss::Update() {
+	Move();
+	UpdateTRSInfo();
+}
+
+
+void Enemy::Render(RenderContext& rc) {
+	if (GetModelRender()) m_modelRender.Draw(rc);
+}
+
+
+void Enemy::InitializeCharacter() {
+	InitializeModel();
+	InitializeCollisionObject();
+}
+
+
+void Enemy::InitializeModel() {
+
+	//モデルの初期化
+	const std::string filePath = m_status.GetEnemyInfo(m_enemyType).GetModelFullPath();
+	GetModelRender()->Init(filePath.c_str());
+	Vector2 charConScl = m_status.GetEnemyInfo(m_enemyType).GetCharConScale();
+	GetCharacterController()->Init(charConScl.x, charConScl.y, m_position);
+	UpdateTRSInfo();
+}
+
+
+void Enemy::InitializeCollisionObject() {
+	//キャラクター当たり判定用のカプセルコリジョンを作成
+	//InitCollisionObject();
+	
+}
+
+
+void Enemy::Move() {
+	RandomWalk();
+}
+
+
+void Enemy::RandomWalk() {
+	//目的地に到着していたら
+	if (IsBeingToMovePos()) {
+		//新しい目的地を決定
+		DecideToMovePos();
+
+		//待機開始
+		std::thread waitThread([this]() {
+			this->RandomWait();
+			});
+		//待機処理をデタッチして別スレッドで実行
+		waitThread.detach();
+	}
+
+	//待機中だったら処理しない
+	if (IsWait()) {	return;	}
+
+	Vector3 dif = m_toMovePos - m_position;
+	dif.Normalize();
+	Vector3 front = Vector3::AxisZ;
+	front.Normalize();
+	m_rotation.Apply(front);
+	//内積を求める
+	float dot = Dot(front, dif);
+
+	//ほぼ同じ方向を向いていれば回転しない
+	if (dot < EnemyStatus::FRONT_ANGLE) {
+		//右回りか左回りか判定する
+		Vector3 cross = Cross(front, dif);
+		cross.Normalize();
+		//0.0fより小さければ右回転
+		if (cross.y < 0.0f) {
+			//右回転
+			m_rotation.AddRotationDegY(-EnemyStatus::ROTATE_SPEED);
 		}
-	};
+		//0.0fより大きければ左回転
+		else if (cross.y > 0.0f) {
+			//左回転
+			m_rotation.AddRotationDegY(EnemyStatus::ROTATE_SPEED);
+		}		return;
+	}
 
-	/// <summary>
-	/// エネミー情報の配列
-	/// </summary>
-	const EnemyInfo EnemiesModel[static_cast<int>(EnEnemy::enEnemy_Num)] = {
-		{"normalEnemy/NormalEnemy", {3.0f, 3.0f, 3.5f}, {25.0f, 20.0f}},
-		{ "gimmickEnemy/GimmickEnemy", {2.8f, 2.0f, 2.8f}, {25.0f, 30.0f}},
-		{ "bossEnemy/BossEnemy" , {1.0f, 1.2f, 1.0f}, {50.0f, 45.0f}}
-	};
+
+	//移動速度をリセット(加速させないため)
+	m_moveSpeed.x = 0.0f;
+	m_moveSpeed.z = 0.0f;
+
+	
+	const Vector3 speed = dif * m_status.GetWalkSpeed(m_enemyType);
+	m_moveSpeed += speed;
+}
+
+
+
+void Enemy::ChasePlayer() {
+	//プレイヤーの位置を取得
+	Vector3 playerPos = m_player->GetPosition();
+	//プレイヤーの方向ベクトルを取得
+	Vector3 toPlayerVec = playerPos - m_enemyPos;
+	toPlayerVec.Normalize();
+	toPlayerVec.y = 0.0f;
+
+	//移動速度をリセット(加速させないため)
+	m_moveSpeed.x = 0.0f;
+	m_moveSpeed.z = 0.0f;
+	m_moveSpeed += toPlayerVec * CHASE_SPEED;
+	
+	m_enemyRotate.SetRotationYFromDirectionXZ(m_moveSpeed);
+	//エネミーの情報を更新
+	UpdateEnemyInfo();
+
 }
