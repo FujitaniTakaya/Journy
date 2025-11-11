@@ -67,7 +67,12 @@ public:
 
 	inline void InitCollisionObject() { m_characterCollision = new CollisionObject; }
 	inline CollisionObject* GetCollisionObject() { return m_characterCollision; }
-
+	inline void DeleteCollision() {
+		if (m_characterCollision) {
+			delete m_characterCollision;
+			m_characterCollision = nullptr;
+		}
+	}
 
 	/** ƒ‚ƒfƒ‹ƒŒƒ“ƒ_[Œn */
 public:

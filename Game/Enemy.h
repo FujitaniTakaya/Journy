@@ -227,15 +227,15 @@ protected:
 	Vector3 m_toMovePos = Vector3::Zero;
 	EnEnemy m_enemyType = EnEnemy::enEnemy_Num;
 	EnEnemyRot m_enemyRotDir = EnEnemyRot::enEnemyRot_Num;
-	bool m_isWait = true;
+	std::atomic<bool> m_isWait = false;
 
 
 
 public:
 	Enemy() {}
-	~Enemy() {}
-	virtual bool Start()override { return true; }
-	virtual void Update() override {};
+	virtual ~Enemy(){}
+	virtual bool Start()override = 0;
+	virtual void Update() override = 0;
 	void Render(RenderContext& rc)override;
 
 	/**	それぞれのスタート処理で呼び出す関数*/
@@ -249,6 +249,8 @@ private:
 
 	void InitializeCollisionObject();
 
+	void InitializeGetOtherClassInfo();
+
 protected:
 	inline void SetEnemyType(const EnEnemy enemyType) { m_enemyType = enemyType; }
 	inline const EnEnemy& GetEnemyType()const { return m_enemyType; }
@@ -258,22 +260,24 @@ protected:
 protected:
 	void Move();
 
-	/**	ランダムウォーク系処理*/
+
+	/**	ランダムウォーク系処理呼び出し*/
 private:
-	void RandomWalk();
+	void RandomWalkAround();
 
 	inline void DecideToMovePos() {
 		m_toMovePos.x = rand() % 401 - 200;
 		m_toMovePos.z = rand() % 401 - 200;
-		m_toMovePos += GetFirstPosition();
+		m_toMovePos += m_firstPos;
 		m_toMovePos.y = 0.0f;
 	}
 
-	inline void RandomWait() {
-		m_isWait= true;
+	inline void RandomWait(std::atomic<bool>& waitFlag) {
+		//ランダムな時間待機
+		//300ms～3300ms
 		int waitTime = rand() % 3001 + 300;
 		std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
-		m_isWait = false;
+		waitFlag = false;
 	}
 
 
@@ -286,29 +290,44 @@ private:
 private:
 	inline bool IsBeingToMovePos()const {
 		Vector3 dif = m_toMovePos - m_position;
-		if (dif.Length() >= m_status.GetWalkSpeed(m_enemyType) * 1.2) return false;
-
+		if (dif.Length() >= m_status.GetWalkSpeed(m_enemyType) * 1.2) {
+			return false;
+		}
 		return true;
 	}
 
 	inline const bool IsWait()const { return m_isWait; }
+
+
+private:
+	/**	プレイヤーを見つけたかどうか*/
+	const bool IsFoundPlayer();
 };
 
 
 class Normal : public Enemy {
 public:
+	~Normal() override{
+		DeleteCollision();
+	}
 	bool Start()override;
 	void Update()override;
 };
 
 class Gimmick : public Enemy {
 public:
+	~Gimmick() override{
+		DeleteCollision();
+	}
 	bool Start()override;
 	void Update()override;
 };
 
 class Boss : public Enemy {
 public:
+	~Boss() override{
+		DeleteCollision();
+	}
 	bool Start()override;
 	void Update()override;
 };
