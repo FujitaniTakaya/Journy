@@ -261,6 +261,26 @@
 //	float m_invincibleFrameCount = 0.0f;
 //};
 
+
+
+
+
+
+//class Player
+//{
+//private:
+//	app::PlayerStatePattern 
+//};
+
+
+
+
+
+
+
+
+
+
 /**
 * @brief プレイヤークラス
 */
@@ -273,7 +293,7 @@ private:
 	EnMoveState m_moveState = EnMoveState::enMoveState_Walk;
 	EnJumpPower m_jumpPowerState = EnJumpPower::enJumpPower_First;
 
-	
+	FontRender m_debugFont;
 
 
 public:
@@ -284,7 +304,7 @@ public:
 	void Render(RenderContext& rc)override;
 
 
-	/** このクラスの中だけで使う	*/
+/** このクラスの中だけで使う	*/
 
 	/**	モデルの初期化	*/
 private:
@@ -293,18 +313,14 @@ private:
 	void InitializeCollisionObject();
 	void InitializeStatusInfo();
 
-	/**	コリジョン情報更新系	*/
-private:
+
+	/**	攻撃コリジョン情報更新	*/
 	inline void UpdateAtkCollisionInfo() {
 		m_atkCollision->SetPosition(GetPosition());
 		m_atkCollision->SetRotation(GetRotation());
 		m_atkCollision->Update();
 	}
 
-	/**	ステータス取得*/
-private:
-	//inline PlayerStatus& GetStatus() { return *m_status; }
-	//inline const PlayerStatus& GetStatus() const { return *m_status; }
 
 	/**	行動系	*/
 private:
@@ -331,10 +347,11 @@ private:
 private:
 	/**	ジャンプパワーステートの調整*/
 	inline const void AdjustNextJumpState() {
-		m_jumpPowerState = static_cast<EnJumpPower>((static_cast<int>(m_jumpPowerState) + 1) % static_cast<int>(EnJumpPower::enJumpPower_Num));
+		uint8_t nextState = static_cast<uint8_t>(m_jumpPowerState) + 1;
+		//ジャンプ力状態を次に進める
+		m_jumpPowerState = static_cast<EnJumpPower>((nextState) % EnJumpPower::enJumpPower_Num);
 		if (m_jumpPowerState == EnJumpPower::enJumpPower_Num) {
 			m_jumpPowerState = EnJumpPower::enJumpPower_First;
 		}
-
 	}
 };

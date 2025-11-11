@@ -1,12 +1,8 @@
 #pragma once
 #include "stdafx.h"
 #include "stdint.h"
-#include <memory>
-#include <vector>
-#include <algorithm>
-#include <array>
 
-enum class EnCharState : uint8_t {
+enum EnCharState {
 	enCharState_Idle,
 	enCharState_Walk,
 	enCharState_Run,
@@ -15,14 +11,7 @@ enum class EnCharState : uint8_t {
 };
 
 
-enum class EnEnemyRot : uint8_t {
-	enEnemyRot_Left = 0,
-	enEnemyRot_Right,
-	enEnemyRot_Num
-};
-
-
-enum class EnEnemy : uint8_t{
+enum EnEnemy {
 	enEnemy_Normal = 0,
 	enEnemy_Gimmick,
 	enEnemy_Boss,
@@ -30,26 +19,34 @@ enum class EnEnemy : uint8_t{
 };
 
 
-enum class EnMoveState : uint8_t {
+enum EnMoveState {
 	enMoveState_Walk,
 	enMoveState_Run,
 	enMoveState_Num
 };
 
 
-enum class EnJumpPower : uint8_t {
+enum EnJumpPower {
 	enJumpPower_First,
 	enJumpPower_Second,
 	enJumpPower_Third,
 	enJumpPower_Num
 };
+//
+//
+//template<typename E>
+//constexpr auto to_underlying(E e) noexcept {
+//	static_assert(std::is_enum_v<E>, "to_underlying can only be used with enum types");)
+//	return static_cast<std::underlying_type_t<E>>(e);
+//}
+/*******************************/
 
 
 struct GameStatus : IGameObject{
 private:
 	static constexpr float one_frame = 1.0f / 60.0f;		//1フレーム分の時間
 	static constexpr float max_flying_time = 0.5f;			//重力加速の最大フレーム数
-	static constexpr float gravity = -28.6;				//重力加速度
+	static constexpr float gravity = -19.8f;				//重力加速度
 	
 	float m_flyingTime = 0.0f;								//滞空時間
 
@@ -170,15 +167,15 @@ private:
 	};
 
 	//!	移動速度の配列
-	const std::array<float, static_cast<size_t>(EnMoveState::enMoveState_Num)> move_speed = {
+	const std::array<float,EnMoveState::enMoveState_Num> move_speed = {
 		200.0f,	400.0f 		
 	};
 	
 	//!	ジャンプ情報の配列
-	std::array<std::unique_ptr<JumpInfo>, static_cast<size_t>(EnJumpPower::enJumpPower_Num)> m_jump_info = { nullptr };
+	std::array<std::unique_ptr<JumpInfo>, EnJumpPower::enJumpPower_Num> m_jump_info = { nullptr };
 
 	//!	アニメーション情報の配列
-	std::array<std::unique_ptr<PlayerAnimInfo>, static_cast<size_t>(EnCharState::enCharState_Num)> m_animation_info = { nullptr };
+	std::array<std::unique_ptr<PlayerAnimInfo>, EnCharState::enCharState_Num> m_animation_info = { nullptr };
 
 	float m_standingTime = 0.0f;							//!	着地時間
 	float m_invincibleTime = 0.0f;							//!	無敵時間
@@ -200,9 +197,9 @@ private:
 public:
 	PlayerStatus() :
 		m_jump_info({
-		std::make_unique<JumpInfo>(200.0, 1.0f),
-		std::make_unique<JumpInfo>(400.0, 0.8f),
-		std::make_unique<JumpInfo>(600.0, 0.3f)
+		std::make_unique<JumpInfo>(320.0, 1.0f),
+		std::make_unique<JumpInfo>(500.0, 0.8f),
+		std::make_unique<JumpInfo>(500.0, 0.3f)
 		}),
 
 		m_animation_info({
@@ -325,8 +322,8 @@ public:
 	static constexpr float FRONT_ANGLE = 0.9999f;			//正面方向の許容値(コサイン値)
 
 private:
-	std::array<float, static_cast<size_t>(EnEnemy::enEnemy_Num)> walk_speed;
-	std::array<std::unique_ptr<EnemyInfo>, static_cast<size_t>(EnEnemy::enEnemy_Num)> enemy_info = { nullptr };
+	std::array<float, EnEnemy::enEnemy_Num> walk_speed;
+	std::array<std::unique_ptr<EnemyInfo>, EnEnemy::enEnemy_Num> enemy_info = { nullptr };
 
 
 public:
@@ -349,12 +346,12 @@ public:
 
 
 	const EnemyInfo& GetEnemyInfo(const EnEnemy enemyType)const {
-		return *enemy_info[static_cast<size_t>(enemyType)];
+		return *enemy_info[enemyType];
 	}
 
 	/**	ステートに応じて歩く速度を取得*/
 	const float& GetWalkSpeed(const EnEnemy enemyType)const {
-		return walk_speed[static_cast<size_t>(enemyType)];
+		return walk_speed[enemyType];
 	}
 
 };

@@ -553,6 +553,11 @@ bool Player::Start() {
 
 
 void Player::Update() {
+	wchar_t debugStr[256];
+	swprintf(debugStr, 256, L"JumPower %d", m_jumpPowerState);
+	m_debugFont.SetText(debugStr);
+
+
 	Move();
 	Jump();
 
@@ -567,6 +572,7 @@ void Player::Update() {
 
 void Player::Render(RenderContext& rc) {
 	if (GetModelRender()) m_modelRender.Draw(rc);
+	m_debugFont.Draw(rc);
 }
 
 
@@ -577,20 +583,22 @@ void Player::InitializeCharacter() {
 }
 
 void Player::InitializeModel() {
-	for (int i = 0; i < static_cast<size_t>(EnCharState::enCharState_Num); i++) {
-		
+	for (auto& anim : m_animationClips) {
+		static int i = 0;
 
 		//ファイルパスの作成
 		const std::string filePath = m_status->GetAnimInfo(static_cast<EnCharState>(i)).GetAnimFullPath();
 
 		//アニメーションの読み込み
-		m_animationClips[i].Load(filePath.c_str());
+		anim.Load(filePath.c_str());
 		//ループ設定
-		if (i == static_cast<size_t>(EnCharState::enCharState_Jump)) {
-			m_animationClips[i].SetLoopFlag(false);
+		if (i == EnCharState::enCharState_Jump) {
+			anim.SetLoopFlag(false);
+			i++;
 			continue;
 		}
-		m_animationClips[i].SetLoopFlag(true);
+		anim.SetLoopFlag(true);
+		i++;
 	}
 
 	const Vector2 charConScl = m_status->GetCharConInfo();
@@ -599,7 +607,7 @@ void Player::InitializeModel() {
 
 	//必要な情報をローカル変数へ代入
 	const char* unityFilePath = PlayerStatus::unity_file_path;
-	int animClipNum = static_cast<int>(EnCharState::enCharState_Num);
+	int animClipNum = EnCharState::enCharState_Num;
 	
 	//モデルレンダーを初期化
 	m_modelRender.Init(unityFilePath , m_animationClips.data(), animClipNum, enModelUpAxisY);
@@ -617,6 +625,14 @@ void Player::InitializeCollisionObject() {
 	const Vector2 charConScl = m_status->GetCharConInfo();
 	m_characterCollision->CreateCapsule(m_position, m_rotation, charConScl.x * 1.01f, charConScl.y * 1.01f);
 	UpdateCollisionInfo();
+
+
+	btTransform start, end;
+	start.setIdentity();
+	end.setIdentity();
+
+
+
 
 	m_atkCollision = new CollisionObject;
 	//攻撃用のボックスコリジョンを作成
@@ -718,6 +734,7 @@ void Player::TripleJump() {
 		return;
 	}
 
+	m_moveSpeed.y = 0.0f;
 
 	//現在のジャンプ力状態をもとにジャンプ力を設定
 	const float jumpPower = m_status->GetJumpInfo(m_jumpPowerState).GetJumpPower();
@@ -761,7 +778,9 @@ void Player::ManageStateAndAnimation() {
 		m_state = EnCharState::enCharState_Jump;
 		//AdjustNextJumpState(m_jumpPowerState);
 		
-		EnJumpPower state = static_cast<EnJumpPower>((static_cast<int>(m_jumpPowerState) + 2) % static_cast<int>(EnJumpPower::enJumpPower_Num));
+
+		//現在のジャンプ力状態を取得、調整
+		EnJumpPower state = static_cast<EnJumpPower>((m_jumpPowerState + 2) % enJumpPower_Num);
 
 		//ジャンプ力状態に応じてアニメーション速度を変更
 		animationSpeed *= m_status->GetJumpInfo(state).GetJumpAnimSpeed();
@@ -769,7 +788,7 @@ void Player::ManageStateAndAnimation() {
 
 	//アニメーション再生
 	m_modelRender.SetAnimationSpeed(animationSpeed);
-	m_modelRender.PlayAnimation(static_cast<int>(m_state));
+	m_modelRender.PlayAnimation(m_state);
 }
 
 
