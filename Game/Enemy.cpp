@@ -371,6 +371,9 @@
 bool Normal::Start() {
 	m_enemyType = EnEnemy::enEnemy_Normal;
 	InitializeCharacter();
+	if (!m_player) {
+		return false;
+	}
 	return true;
 }
 
@@ -378,6 +381,9 @@ bool Normal::Start() {
 bool Gimmick::Start() {
 	m_enemyType = EnEnemy::enEnemy_Gimmick;
 	InitializeCharacter();
+	if (!m_player) {
+		return false;
+	}
 	return true;
 }
 
@@ -385,13 +391,24 @@ bool Gimmick::Start() {
 bool Boss::Start() {
 	m_enemyType = EnEnemy::enEnemy_Boss;
 	InitializeCharacter();
+	if (!m_player) {
+		return false;
+	}
 	return true;
 }
 
 
 void Normal::Update() {
+	if (!IsStart()) return;
+
+	//行動パターン
 	Move();
+	//死亡判定
+	Death();
+
 	UpdateTRSInfo();
+	UpdateCollisionInfo();
+
 }
 
 
@@ -404,6 +421,7 @@ void Gimmick::Update() {
 void Boss::Update() {
 	Move();
 	UpdateTRSInfo();
+	UpdateCollisionInfo();
 }
 
 
@@ -424,16 +442,16 @@ void Enemy::InitializeModel() {
 	//モデルの初期化
 	const std::string filePath = m_status.GetEnemyInfo(m_enemyType).GetModelFullPath();
 	GetModelRender()->Init(filePath.c_str());
-	Vector2 charConScl = m_status.GetEnemyInfo(m_enemyType).GetCharConScale();
-	GetCharacterController()->Init(charConScl.x, charConScl.y, m_position);
+	m_charConScl = m_status.GetEnemyInfo(m_enemyType).GetCharConScale();
+	GetCharacterController()->Init(m_charConScl.x, m_charConScl.y, m_position);
 	UpdateTRSInfo();
 }
 
 
 void Enemy::InitializeCollisionObject() {
-	//キャラクター当たり判定用のカプセルコリジョンを作成
-	//InitCollisionObject();
+	m_characterCollision = new CollisionObject;
 	
+	m_characterCollision->CreateCapsule(m_position, m_rotation, m_charConScl.x, m_charConScl.y);
 }
 
 
@@ -448,6 +466,16 @@ void Enemy::Move() {
 		return;
 	}
 	RandomWalkAround();
+}
+
+
+void Enemy::Death() {
+	if (!IsStompedByPlayer()) return;
+
+	//プレイヤーのキルフラグを立てる
+	m_player->SetIsKillEnemy(true);
+	//エネミーを削除
+	DeleteGO(this);
 }
 
 
@@ -559,4 +587,29 @@ const bool Enemy::IsFoundPlayer() {
 		return false;
 	}
 	return true;
+}
+
+
+bool Enemy::IsStompedByPlayer() {
+	//プレイヤーの攻撃コリジョンを取得
+	CollisionObject* charCon = m_player->GetAtkCollision();
+	//コリジョンがなければ処理しない
+	if (!charCon) {
+		return false;
+	}
+
+	//エネミーのキャラコンとプレイヤーの攻撃コリジョンが当たっていたら
+	if (!charCon->IsHit(m_characterController)) {
+		return false;
+	}
+
+	//プレイヤーの高さとエネミーの頭の高さを比較
+	const float playerHight = m_player->GetPosition().y;
+	const float enemyHedHight = m_position.y + (m_charConScl.y * 2);
+
+	if (playerHight <= enemyHedHight) {
+		return false;
+	}
+
+	return true;	
 }
