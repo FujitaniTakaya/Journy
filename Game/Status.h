@@ -73,7 +73,7 @@ public:
 	float GetGravity() {
 		AddOneFrame(m_flyingTime);
 		m_flyingTime = std::min<float>(m_flyingTime, max_flying_time);
-		return gravity * m_flyingTime;
+		return gravity * m_flyingTime * 2;
 	}
 	
 
@@ -91,7 +91,8 @@ private:
 	static constexpr const char* animation_file_path = "Assets/animData/";						//!	ファイルの場所
 	static constexpr const char* animation_file_extension = ".tka";								//!	拡張子
 
-	static constexpr float can_next_jump_state = 0.25f;					//!	次の段のジャンプに切り替えれるまでの猶予時間	
+	static constexpr float can_next_jump_time = 0.25f;					//!	次の段のジャンプに切り替えれるまでの猶予時間	
+	static constexpr float can_stomp_jump_time = 0.1f;
 
 
 private:
@@ -191,7 +192,6 @@ private:
 		m_standingTime(standingTime) 
 	{}
 
-	//{ 200.0f, 1.0f }, { 400.0f, 0.8f }, { 600.0f, 0.6f }
 
 /**	コンストラクタ*/
 public:
@@ -199,7 +199,7 @@ public:
 		m_jump_info({
 		std::make_unique<JumpInfo>(320.0, 1.0f),
 		std::make_unique<JumpInfo>(500.0, 0.8f),
-		std::make_unique<JumpInfo>(500.0, 0.3f)
+		std::make_unique<JumpInfo>(800.0, 0.3f)
 		}),
 
 		m_animation_info({
@@ -214,25 +214,30 @@ public:
 		m_standingTime(0.0f)
 	{}
 
-	//std::vector<int> hp;
-	//std::function<void()> cb;
-	//
-	//void Test(int hp, [&]void() {
-	//
-	//	});
 
-
-/**	プレイヤー構造体ゲッター関数*/
+/**	プレイヤーステータスゲッター関数*/
 public:
 	/**
-	*	@brief 現在のライフを取得する
+	*	@brief 次の段階のジャンプに切り替え可能かどうか
 	*/
 	bool CanNextJump() {
 		AddOneFrame(m_standingTime);
 		//次の段階のジャンプに切り替え可能か
-		if (m_standingTime <= can_next_jump_state) { return false; }
-		return true;
+		if (m_standingTime <= can_next_jump_time) { return true; }
+		return false;
 	}
+
+
+	/**
+	*	@brief 踏みつけジャンプが可能かどうか
+	*/
+	bool CanStompJump() {
+		AddOneFrame(m_standingTime);
+		if (m_standingTime <= can_next_jump_time) { return true; }
+		//if (m_standingTime <= can_stomp_jump_time) { return true; }
+		return false;
+	}
+
 
 	/**
 	* @brief ジャンプ情報を取得する

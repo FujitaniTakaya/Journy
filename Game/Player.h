@@ -293,7 +293,7 @@ private:
 	EnMoveState m_moveState = EnMoveState::enMoveState_Walk;
 	EnJumpPower m_jumpPowerState = EnJumpPower::enJumpPower_First;
 
-	FontRender m_debugFont;
+	bool m_isKillEnemy = false;
 
 
 public:
@@ -302,6 +302,21 @@ public:
 	bool Start()override;
 	void Update()override;
 	void Render(RenderContext& rc)override;
+
+
+
+	
+public:
+	//ゲッター・セッター系
+	inline CollisionObject* GetAtkCollision()const { return m_atkCollision; }
+
+	inline void SetIsKillEnemy(const bool isKill) { m_isKillEnemy = isKill; }
+
+
+
+
+
+
 
 
 /** このクラスの中だけで使う	*/
@@ -316,8 +331,8 @@ private:
 
 	/**	攻撃コリジョン情報更新	*/
 	inline void UpdateAtkCollisionInfo() {
-		m_atkCollision->SetPosition(GetPosition());
-		m_atkCollision->SetRotation(GetRotation());
+		m_atkCollision->SetPosition(m_position);
+		m_atkCollision->SetRotation(m_rotation);
 		m_atkCollision->Update();
 	}
 
@@ -330,7 +345,7 @@ private:
 	
 	void TripleJump();
 
-	void JumpAtk();	
+	void StompJump();
 
 	void ManageStateAndAnimation();
 

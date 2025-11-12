@@ -553,10 +553,6 @@ bool Player::Start() {
 
 
 void Player::Update() {
-	wchar_t debugStr[256];
-	swprintf(debugStr, 256, L"JumPower %d", m_jumpPowerState);
-	m_debugFont.SetText(debugStr);
-
 
 	Move();
 	Jump();
@@ -572,7 +568,6 @@ void Player::Update() {
 
 void Player::Render(RenderContext& rc) {
 	if (GetModelRender()) m_modelRender.Draw(rc);
-	m_debugFont.Draw(rc);
 }
 
 
@@ -584,7 +579,7 @@ void Player::InitializeCharacter() {
 
 void Player::InitializeModel() {
 	for (auto& anim : m_animationClips) {
-		static int i = 0;
+		static uint8_t i = 0;
 
 		//ファイルパスの作成
 		const std::string filePath = m_status->GetAnimInfo(static_cast<EnCharState>(i)).GetAnimFullPath();
@@ -607,7 +602,7 @@ void Player::InitializeModel() {
 
 	//必要な情報をローカル変数へ代入
 	const char* unityFilePath = PlayerStatus::unity_file_path;
-	int animClipNum = EnCharState::enCharState_Num;
+	uint8_t animClipNum = EnCharState::enCharState_Num;
 	
 	//モデルレンダーを初期化
 	m_modelRender.Init(unityFilePath , m_animationClips.data(), animClipNum, enModelUpAxisY);
@@ -619,24 +614,9 @@ void Player::InitializeModel() {
 
 
 void Player::InitializeCollisionObject() {	
-	//キャラクター当たり判定用のカプセルコリジョンを作成
-	m_characterCollision = new CollisionObject;
-
-	const Vector2 charConScl = m_status->GetCharConInfo();
-	m_characterCollision->CreateCapsule(m_position, m_rotation, charConScl.x * 1.01f, charConScl.y * 1.01f);
-	UpdateCollisionInfo();
-
-
-	btTransform start, end;
-	start.setIdentity();
-	end.setIdentity();
-
-
-
-
 	m_atkCollision = new CollisionObject;
 	//攻撃用のボックスコリジョンを作成
-	m_atkCollision->CreateBox(m_position, m_rotation, { 40.0f, 10.0f, 30.0f });
+	m_atkCollision->CreateBox(m_position, m_rotation, { 20.0f, 5.0f, 15.0f });
 	m_atkCollision->SetIsEnable(false);
 	UpdateAtkCollisionInfo();
 }
@@ -685,13 +665,21 @@ void Player::Move() {
 
 
 void Player::Jump() {
-	TripleJump();
-	JumpAtk();
+	
+	if (m_isKillEnemy) {
+		StompJump();
+	}
+	else {
+		TripleJump();
+	}
+	
+	if (m_atkCollision) {
+	}//ジャンプ状態に応じて攻撃コリジョンの有効無効を切り替え
+	m_atkCollision->SetIsEnable(IsJump());	
 }
 
 
 void Player::TripleJump() {
-
 
 	//ジャンプしていれば
 	if (IsJump()) {
@@ -702,7 +690,6 @@ void Player::TripleJump() {
 		AddGravity();
 		return;
 	}
-
 
 	//滞空時間をリセット
 
@@ -717,7 +704,7 @@ void Player::TripleJump() {
 
 
 		//次の段階のジャンプに切り替え可能か
-		if (m_status->CanNextJump()) {
+		if (!m_status->CanNextJump()) {
 
 
 			//ジャンプ力状態を最初に戻す
@@ -746,12 +733,38 @@ void Player::TripleJump() {
 }
 
 
-void Player::JumpAtk() {
-	if (!m_atkCollision) {
+void Player::StompJump() {
+
+	if (!IsJump()) m_isKillEnemy = false;
+
+	//if (!m_isKillEnemy) return;
+
+	float jumpPower = 0.0f;
+	
+	
+	if (!m_status->CanStompJump()) {
+		m_isKillEnemy = false;
+
+		//滞空時間をリセット
+		m_status->ResetFlyingTime();
+		//落下速度を0にする
+		m_moveSpeed.y = 0.0f;
+		jumpPower = m_status->GetJumpInfo(EnJumpPower::enJumpPower_First).GetJumpPower();
+		m_moveSpeed.y += jumpPower;
 		return;
 	}
-	//ジャンプ状態に応じて攻撃コリジョンの有効無効を切り替え
-	m_atkCollision->SetIsEnable(IsJump());
+	if (!g_pad[0]->IsTrigger(enButtonB)) {
+		return;
+	}
+
+	m_isKillEnemy = false;
+	//滞空時間をリセット
+	m_status->ResetFlyingTime();
+	//落下速度を0にする
+	m_moveSpeed.y = 0.0f;
+	jumpPower = m_status->GetJumpInfo(m_jumpPowerState).GetJumpPower();
+	m_moveSpeed.y += jumpPower;
+	AdjustNextJumpState();	
 }
 
 
@@ -780,7 +793,8 @@ void Player::ManageStateAndAnimation() {
 		
 
 		//現在のジャンプ力状態を取得、調整
-		EnJumpPower state = static_cast<EnJumpPower>((m_jumpPowerState + 2) % enJumpPower_Num);
+		uint8_t nextState = m_jumpPowerState + 2;
+		EnJumpPower state = static_cast<EnJumpPower>(nextState % enJumpPower_Num);
 
 		//ジャンプ力状態に応じてアニメーション速度を変更
 		animationSpeed *= m_status->GetJumpInfo(state).GetJumpAnimSpeed();
@@ -790,173 +804,3 @@ void Player::ManageStateAndAnimation() {
 	m_modelRender.SetAnimationSpeed(animationSpeed);
 	m_modelRender.PlayAnimation(m_state);
 }
-
-
-
-
-
-//void Player::Jump() {
-//
-//	//敵を倒した直後であれば
-//	if (IsKillEnemy()) {
-//		//敵を倒した後のジャンプ処理
-//		JumpAfterKilledEnemy();
-//		return;
-//	}
-//
-//	//ジャンプ可能な状態でなければ
-//	if (!CanJump()) {
-//		//何もしない
-//		return;
-//	}
-//	//次の段階のジャンプが可能でなければ
-//	if (m_canNextJump) {
-//		//次の段階のジャンプが不可能になれば
-//		if (MeasureNextJumpFrameCount()) {
-//			//ジャンプ状態を最初に戻す
-//			m_jumpState = enJumpPower_First;
-//			m_canNextJump = false;
-//			return;
-//		}
-//	}
-//	//ジャンプボタンが押されていなければ
-//	if (!g_pad[0]->IsTrigger(enButtonB)) {
-//		return;
-//	}
-//	//ジャンプ力を加算
-//	float jumpPower = MoveInfo::JUMP_POWER[m_jumpState];
-//	m_moveSpeed.y += jumpPower;
-//
-//	//ジャンプ状態を更新
-//	m_jumpState = static_cast<EnJumpPower>((m_jumpState + 1) % enJumpPower_Num);
-//	m_canNextJump = true;
-//	//最初の段階のジャンプでなければ
-//	if (m_jumpState != enJumpPower_First) {
-//		return;
-//	}
-//	m_canNextJump = false;
-//}
-//
-//
-//void Player::JumpAtk() {
-//	//ジャンプ中なら
-//	if (m_playerState == enPlayerState_Jump) {
-//		//当たり判定があれば
-//		if (m_playerAtkCollision) {
-//			//何もしない
-//			return;
-//		}
-//		//攻撃中でなければ
-//		if (!m_isAtk) {
-//			//攻撃コリジョン生成
-//			SetAtkCollision();
-//		}
-//	}
-//	//ジャンプ中でなければ
-//	else {
-//		//攻撃コリジョンがなければ
-//		if (!m_playerAtkCollision) {
-//			//何もしない
-//			return;
-//		}
-//		//攻撃コリジョン削除
-//		delete m_playerAtkCollision;
-//		m_playerAtkCollision = nullptr;
-//		m_isAtk = false;
-//	}
-//}
-//
-//
-//void Player::JumpAfterKilledEnemy() {
-//	//地面についていれば
-//	if (m_playerCharaCon.IsOnGround()) {
-//		//敵を倒したフラグをリセット
-//		SetFlagIsKillEnemy(false);
-//		return;
-//	}
-//	//次のジャンプまでの猶予時間を計測
-//	//規定時間たったら
-//	if (MeasureNextJumpFrameCount()) {
-//		//敵を倒したフラグをリセット
-//		SetFlagIsKillEnemy(false);
-//		//滞空時間をリセット
-//		m_flyingTime = 0.0f;
-//		//移動速度をリセット
-//		m_moveSpeed.y = 0.0f;
-//
-//		//ジャンプ力を加算
-//		float jumpPower = MoveInfo::JUMP_POWER[enJumpPower_First];
-//		m_moveSpeed.y += jumpPower;
-//		m_jumpState = enJumpPower_First;
-//		m_canNextJump = false;
-//
-//		return;
-//	}
-//	//ジャンプボタンが押されていなければ
-//	if (!g_pad[0]->IsTrigger(enButtonB)) {
-//		return;
-//	}
-//	//敵を倒したフラグをリセット
-//	SetFlagIsKillEnemy(false);
-//	//滞空時間をリセット
-//	m_flyingTime = 0.0f;
-//	//移動速度をリセット
-//	m_moveSpeed.y = 0.0f;
-//
-//	//ジャンプ力を加算
-//	float jumpPower = MoveInfo::JUMP_POWER[m_jumpState];
-//	m_moveSpeed.y += jumpPower;
-//	//ジャンプ状態を更新
-//	m_jumpState = static_cast<EnJumpPower>((m_jumpState + 1) % enJumpPower_Num);
-//	m_canNextJump = false;
-//}
-//
-//
-//bool Player::CanJump() {
-//	//地面についていなかったら
-//	if (!m_playerCharaCon.IsOnGround()) {
-//		m_flyingTime += GameInfo::ONE_FRAME;
-//		
-// 
-//		//重力を発生させる
-//		m_moveSpeed.y += MveInfo::GRAVITY * m_flyingTime;		
-// 
-//		return false;
-//	}
-//	//地面についているのでタイマーをリセット
-//	m_flyingTime = 0.0f;
-//	m_moveSpeed.y = 0.0f;
-//	return true;
-//}
-//
-//
-//bool Player::MeasureNextJumpFrameCount() {
-//	if (m_standingTime <= MoveInfo::CAN_NEXT_JUMP_FRAME) {
-//		m_standingTime += GameInfo::ONE_FRAME;
-//		return false;
-//	}
-//	//タイマーをリセット
-//	m_standingTime = 0.0f;
-//	return true;
-//}
-//
-//
-//bool Player::CanNextPowerJump() {
-//	//空中にいるときにジャンプボタンを押したら
-//	if (!CanJump()) {
-//		if (g_pad[0]->IsTrigger(enButtonB)) {
-//			m_jumpState = enJumpPower_First;
-//		}
-//		//ジャンプさせない
-//		return false;
-//	}
-//	//地面についている時間をカウント
-//	if (MeasureNextJumpFrameCount()) {
-//		//ジャンプパワーを戻す
-//		m_jumpState = enJumpPower_First;
-//		//ジャンプさせない
-//		return false;
-//	}
-//	return true;
-//}
-
