@@ -12,14 +12,17 @@ private:
 protected:
 	Vector3 m_firstPos = Vector3::Zero;
 	Vector3 m_position = Vector3::Zero;
-	Vector3 m_scale = Vector3::One;
-	Quaternion m_rotation = Quaternion::Identity;
 	Vector3 m_moveSpeed = Vector3::Zero;
+	Vector3 m_scale = Vector3::One;
+	Vector2 m_charConScl = Vector2::Zero;
+	Quaternion m_rotation = Quaternion::Identity;
 	CharacterController m_characterController;
 	CollisionObject* m_characterCollision = nullptr;
+	Vector3 m_charCollisionPos = Vector3::Zero;
 	ModelRender m_modelRender;
 	//std::vector<AnimationClip> m_animationClips;
 
+	
 
 public:
 	Character() : m_status(std::make_unique<GameStatus>()) {}
@@ -117,12 +120,15 @@ protected:
 
 
 	inline void UpdateCollisionInfo() {
-		if (!GetCollisionObject()) {
+		if (!m_characterCollision) {
 			return;
 		}
 		m_characterCollision->SetIsEnable(true);
-		m_characterCollision->SetPosition(m_position);
+		m_charCollisionPos = m_position;
+		m_charCollisionPos.y += m_charConScl.y * 3/4;
+		m_characterCollision->SetPosition(m_charCollisionPos);
 		m_characterCollision->SetRotation(m_rotation);
+		m_characterCollision->Update();
 	}
 
 

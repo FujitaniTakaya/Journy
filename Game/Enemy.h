@@ -219,16 +219,16 @@ class Player;
 
 class Enemy : public Character {
 private:
-	Player* m_player = nullptr;								//プレイヤーのポインタ
+								//プレイヤーのポインタ
 
 	EnemyStatus m_status;
 
 protected:	
+	Player* m_player = nullptr;
+
 	Vector3 m_toMovePos = Vector3::Zero;
 	EnEnemy m_enemyType = EnEnemy::enEnemy_Num;
-	EnEnemyRot m_enemyRotDir = EnEnemyRot::enEnemyRot_Num;
 	std::atomic<bool> m_isWait = false;
-
 
 
 public:
@@ -251,6 +251,7 @@ private:
 
 	void InitializeGetOtherClassInfo();
 
+
 protected:
 	inline void SetEnemyType(const EnEnemy enemyType) { m_enemyType = enemyType; }
 	inline const EnEnemy& GetEnemyType()const { return m_enemyType; }
@@ -261,10 +262,13 @@ protected:
 	void Move();
 
 
-	/**	ランダムウォーク系処理呼び出し*/
-private:
+	/**	プレイヤーに追従*/
+	void ChasePlayer();
+
+	/**	ランダムウォーク*/
 	void RandomWalkAround();
 
+	/** 次の目的地を決める*/
 	inline void DecideToMovePos() {
 		m_toMovePos.x = rand() % 401 - 200;
 		m_toMovePos.z = rand() % 401 - 200;
@@ -281,12 +285,10 @@ private:
 	}
 
 
-	/**	プレイヤーに追従*/
-private:
-	void ChasePlayer();
+	void Death();
 
 
-	/** ランダムウォークフラグゲッター・セッター*/
+	/** フラグゲッター・セッター*/
 private:
 	inline bool IsBeingToMovePos()const {
 		Vector3 dif = m_toMovePos - m_position;
@@ -299,9 +301,11 @@ private:
 	inline const bool IsWait()const { return m_isWait; }
 
 
-private:
 	/**	プレイヤーを見つけたかどうか*/
 	const bool IsFoundPlayer();
+
+	/**	プレイヤー踏まれたかどうか*/
+	bool IsStompedByPlayer();
 };
 
 
