@@ -2,28 +2,36 @@
 #include "Stage.h"
 
 
-Stage::Stage() {
-	SetStage();
-}
-
-void Stage::Render(RenderContext& rc) {
-	if (!m_stageModelRender) {
-		return;
-	}
-	m_stageModelRender->Draw(rc);
+bool First::Start(){
+	SetStage("firstStage");
+	return true;
 }
 
 
-void Stage::SetStage() {
-	m_stageModelRender = new ModelRender;
-	m_stageModelRender->Init("Assets/stage/Stage.tkm");
-	m_stageModelRender->SetPosition(Vector3::Zero);
+void First::Update() {
 
-	ModelRender* model = m_stageModelRender;
-	m_stagePhysics.CreateFromModel(model->GetModel(), model->GetModel().GetWorldMatrix());
+}
 
-	//“–‚½‚è”»’è‚Ì‰ÂŽ‹‰»
-	PhysicsWorld::GetInstance()->EnableDrawDebugWireFrame();
 
-	m_stageModelRender->Update();
+void First::Render(RenderContext& rc) {
+	if (GetModelRender()) m_modelRender.Draw(rc);
+}
+bool GoalPole::Start() {
+	SetStage("goalPole/goalPole");
+
+	//“–‚½‚è”»’è‚Ìì¬
+	m_collisionObject = new CollisionObject;
+	m_collisionObject->CreateCapsule(m_position, m_rotation, 10.0f, 30.0f);
+	if (!m_collisionObject) return false;
+	return true;
+}
+
+
+void GoalPole::Update() {
+
+}
+
+
+void GoalPole::Render(RenderContext& rc) {
+	if (GetModelRender()) m_modelRender.Draw(rc);
 }
