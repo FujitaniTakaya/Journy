@@ -324,7 +324,7 @@ protected:
 class Normal : public Enemy {
 public:
 	~Normal() override{
-		
+		g_k2Engine->SetDrawVectorDisable();
 	}
 	bool Start()override;
 	void Update()override;

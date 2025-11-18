@@ -385,16 +385,13 @@ void Normal::Update() {
 	DrawVectorFront();
 	DrawVectorToMovePos();
 
-	//・ｽs・ｽ・ｽ・ｽp・ｽ^・ｽ[・ｽ・ｽ
 	Move();
-	//・ｽ・ｽ・ｽS・ｽ・ｽ・ｽ・ｽ
 	Death();
 
-	UpdateTRSInfo();
-	
-	
-	UpdateCollisionInfo();
+	m_moveSpeed.y = 0.0f;
 
+	UpdateTRSInfo();	
+	UpdateCollisionInfo();
 }
 
 bool Gimmick::Start() {
@@ -473,6 +470,7 @@ void Enemy::Move() {
 		return;
 	}
 	RandomWalkAround();
+	//m_moveSpeed.y = 0.0f;
 }
 
 
@@ -510,7 +508,6 @@ void Enemy::RandomWalkAround() {
 	//移動速度をリセット(加速させないため)
 	m_moveSpeed.x = 0.0f;
 	m_moveSpeed.z = 0.0f;
-	m_moveSpeed.y = 0.0f;
 
 	Vector3 dif = m_toMovePos - m_position;
 	dif.Normalize();
