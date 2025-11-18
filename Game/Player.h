@@ -263,37 +263,20 @@
 
 
 
-
-
-
-//class Player
-//{
-//private:
-//	app::PlayerStatePattern 
-//};
-
-
-
-
-
-
-
-
-
-
 /**
 * @brief プレイヤークラス
 */
 class Player : public Character {
 private:
 	std::unique_ptr<PlayerStatus> m_status;
-	CollisionObject* m_atkCollision = nullptr;
 	std::array<AnimationClip, static_cast<size_t>(EnCharState::enCharState_Num)> m_animationClips;
 	EnCharState m_state = EnCharState::enCharState_Idle;
 	EnMoveState m_moveState = EnMoveState::enMoveState_Walk;
 	EnJumpPower m_jumpPowerState = EnJumpPower::enJumpPower_First;
+	CollisionObject* m_atkCollision = nullptr;
 
 	bool m_isKillEnemy = false;
+	bool m_isNearCamera = false;
 
 
 public:
@@ -312,8 +295,10 @@ public:
 
 	inline void SetIsKillEnemy(const bool isKill) { m_isKillEnemy = isKill; }
 
+	inline void SetIsNearCamera(const bool isNear) { m_isNearCamera = isNear; }
 
 
+	inline PlayerStatus* GetStatus()const { return m_status.get(); }
 
 
 
@@ -353,7 +338,7 @@ private:
 private:
 
 	inline bool IsRun() {
-		if (IsJump() || !IsMove() || !g_pad[0]->IsPress(enButtonA)) return false;
+		if (!IsMove() || !g_pad[0]->IsPress(enButtonB)) return false;
 
 		return true;
 	}

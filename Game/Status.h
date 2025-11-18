@@ -32,17 +32,10 @@ enum EnJumpPower {
 	enJumpPower_Third,
 	enJumpPower_Num
 };
-//
-//
-//template<typename E>
-//constexpr auto to_underlying(E e) noexcept {
-//	static_assert(std::is_enum_v<E>, "to_underlying can only be used with enum types");)
-//	return static_cast<std::underlying_type_t<E>>(e);
-//}
 /*******************************/
 
 
-struct GameStatus : IGameObject{
+struct GameStatus{
 private:
 	static constexpr float one_frame = 1.0f / 60.0f;		//1フレーム分の時間
 	static constexpr float max_flying_time = 0.5f;			//重力加速の最大フレーム数
@@ -169,7 +162,7 @@ private:
 
 	//!	移動速度の配列
 	const std::array<float,EnMoveState::enMoveState_Num> move_speed = {
-		200.0f,	400.0f 		
+		200.0f,	500.0f 		
 	};
 	
 	//!	ジャンプ情報の配列
@@ -197,26 +190,30 @@ private:
 public:
 	PlayerStatus() :
 		m_jump_info({
-		std::make_unique<JumpInfo>(320.0, 1.0f),
-		std::make_unique<JumpInfo>(500.0, 0.8f),
-		std::make_unique<JumpInfo>(800.0, 0.3f)
+		std::make_unique<JumpInfo>(500.0, 1.0f),
+		std::make_unique<JumpInfo>(700.0, 0.8f),
+		std::make_unique<JumpInfo>(1000.0, 0.3f)
 		}),
 
 		m_animation_info({
 		std::make_unique<PlayerAnimInfo>("idle", 1.0f),
-		std::make_unique<PlayerAnimInfo>("walk", 1.2f),
-		std::make_unique<PlayerAnimInfo>("run", 1.3f),
+		std::make_unique<PlayerAnimInfo>("walk", 1.3f),
+		std::make_unique<PlayerAnimInfo>("run", 1.5f),
 		std::make_unique<PlayerAnimInfo>("jump", 1.0f)
 		}),
 
-		m_maxLife(3), 
-		m_life(m_maxLife), 
+		m_maxLife(5), 
+		m_life(3), 
 		m_standingTime(0.0f)
 	{}
 
 
 /**	プレイヤーステータスゲッター関数*/
 public:
+	const int& GetLife() const { return m_life; }
+
+
+
 	/**
 	*	@brief 次の段階のジャンプに切り替え可能かどうか
 	*/
@@ -233,7 +230,7 @@ public:
 	*/
 	bool CanStompJump() {
 		AddOneFrame(m_standingTime);
-		if (m_standingTime <= can_next_jump_time) { return true; }
+		if (m_standingTime <= can_stomp_jump_time) { return true; }
 		//if (m_standingTime <= can_stomp_jump_time) { return true; }
 		return false;
 	}
@@ -290,20 +287,19 @@ struct EnemyStatus {
 	private:
 		//ファイル名
 		std::string fileName;
-		//モデルのスケール
-		Vector3 modelScale;
 		//キャラコンのスケール
 		Vector2 charConScale;
 
 	public:
 		EnemyInfo(
 			const std::string fileName,
-			const Vector3 modelScale,
-			const Vector2 charConScale) :
+			const float charConX,
+			const float charConY) :
 			fileName(fileName),
-			modelScale(modelScale),
-			charConScale(charConScale)
+			charConScale(charConX, charConY)
 		{}
+
+		EnemyInfo(){}
 
 		/// <summary>
 		/// エネミーモデルのファイルパスを取得
@@ -311,10 +307,6 @@ struct EnemyStatus {
 		const std::string GetModelFullPath()const {
 			return std::string(FILE_PATH) + fileName + std::string(FILE_EXTENSTION);
 		}
-
-
-		/**	モデルのスケールを取得*/
-		const Vector3& GetModelScale()const { return modelScale; }
 		/**	キャラコンのスケールを取得*/
 		const Vector2& GetCharConScale()const { return charConScale; }
 	};
@@ -322,7 +314,7 @@ struct EnemyStatus {
 
 
 public:
-	static constexpr float CHASE_SPEED = 60.0f;				//プレイヤーを追従するスピード
+	static constexpr float CHASE_SPEED = 100.0f;				//プレイヤーを追従するスピード
 	static constexpr float ROTATE_SPEED = 1.5f;				//回転するスピード
 	static constexpr float FRONT_ANGLE = 0.9999f;			//正面方向の許容値(コサイン値)
 
@@ -334,15 +326,18 @@ private:
 public:
 	EnemyStatus() : 
 		enemy_info({
-			std::make_unique<EnemyInfo>(EnemyInfo{"normalEnemy/NormalEnemy",
-			{3.0f, 3.0f, 3.5f}, {25.0f, 20.0f}}),
-			
-			std::make_unique<EnemyInfo>(EnemyInfo{ "gimmickEnemy/GimmickEnemy",
-			{2.8f, 2.0f, 2.8f}, {25.0f, 30.0f} }),
-			
-			std::make_unique<EnemyInfo>(EnemyInfo{ "bossEnemy/BossEnemy",
-			{1.0f, 1.2f, 1.0f}, {50.0f, 45.0f} })
+		std::make_unique<EnemyInfo>("normalEnemy/NormalEnemy",25.0f, 20.0f),
+		std::make_unique<EnemyInfo>("gimmickEnemy/GimmickEnemy",25.0f, 30.0f),	
+		std::make_unique<EnemyInfo>("bossEnemy/BossEnemy",50.0f, 45.0f)
 		}),
+
+
+		/*m_animation_info({
+		std::make_unique<PlayerAnimInfo>("idle", 1.0f),
+		std::make_unique<PlayerAnimInfo>("walk", 1.3f),
+		std::make_unique<PlayerAnimInfo>("run", 1.5f),
+		std::make_unique<PlayerAnimInfo>("jump", 1.0f)
+			}),*/
 
 		walk_speed({
 			20.0f, 30.0f, 40.0f

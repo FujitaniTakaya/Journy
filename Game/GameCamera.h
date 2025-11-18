@@ -12,7 +12,7 @@ namespace {
 	};	
 
 	const CameraInfo cameraInfo = {
-		{0.0f, 125.0f, -125.0f}, 2.0f, 1000.0f, 5.0f
+		{0.0f, 125.0f,500.0f}, 2.0f, 1000.0f, 5.0f
 	};
 }
 
@@ -22,14 +22,15 @@ class GameCamera : public IGameObject{
 public:
 	GameCamera();
 	~GameCamera();
+	bool Start()override { return true; }
 	void Update()override;
 	
 private:
 	void SetCamera(const CameraInfo& camera);
 
-private:
-	
+	void IsNearPlayer();
 
+private:
 	Player* m_player = nullptr;
 	Vector3 m_toCameraPos = Vector3::Zero;
 	SpringCamera m_springCamera;

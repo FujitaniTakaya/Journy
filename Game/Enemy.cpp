@@ -371,12 +371,28 @@
 bool Normal::Start() {
 	m_enemyType = EnEnemy::enEnemy_Normal;
 	InitializeCharacter();
+	DecideToMovePos();
 	if (!m_player) {
 		return false;
 	}
 	return true;
 }
 
+
+void Normal::Update() {
+	if (!IsStart()) return;
+
+	DrawVectorFront();
+	DrawVectorToMovePos();
+
+	Move();
+	Death();
+
+	m_moveSpeed.y = 0.0f;
+
+	UpdateTRSInfo();	
+	UpdateCollisionInfo();
+}
 
 bool Gimmick::Start() {
 	m_enemyType = EnEnemy::enEnemy_Gimmick;
@@ -398,20 +414,6 @@ bool Boss::Start() {
 }
 
 
-void Normal::Update() {
-	if (!IsStart()) return;
-
-	//行動パターン
-	Move();
-	//死亡判定
-	Death();
-
-	UpdateTRSInfo();
-	UpdateCollisionInfo();
-
-}
-
-
 void Gimmick::Update() {
 	Move();
 	UpdateTRSInfo();
@@ -425,14 +427,14 @@ void Boss::Update() {
 }
 
 
-void Enemy::Render(RenderContext& rc) {
+void Normal::Render(RenderContext& rc) {
 	if (GetModelRender()) m_modelRender.Draw(rc);
 }
 
 
 void Enemy::InitializeCharacter() {
 	InitializeModel();
-	InitializeCollisionObject();
+	//InitializeCollisionObject();
 	InitializeGetOtherClassInfo();
 }
 
@@ -441,9 +443,11 @@ void Enemy::InitializeModel() {
 
 	//モデルの初期化
 	const std::string filePath = m_status.GetEnemyInfo(m_enemyType).GetModelFullPath();
-	GetModelRender()->Init(filePath.c_str());
+	m_modelRender.Init(filePath.c_str());
 	m_charConScl = m_status.GetEnemyInfo(m_enemyType).GetCharConScale();
-	GetCharacterController()->Init(m_charConScl.x, m_charConScl.y, m_position);
+	m_characterController.Init(m_charConScl.x, m_charConScl.y, m_position);
+
+	//m_position.y += 30.0f;
 	UpdateTRSInfo();
 }
 
@@ -466,6 +470,7 @@ void Enemy::Move() {
 		return;
 	}
 	RandomWalkAround();
+	//m_moveSpeed.y = 0.0f;
 }
 
 
@@ -503,7 +508,6 @@ void Enemy::RandomWalkAround() {
 	//移動速度をリセット(加速させないため)
 	m_moveSpeed.x = 0.0f;
 	m_moveSpeed.z = 0.0f;
-
 
 	Vector3 dif = m_toMovePos - m_position;
 	dif.Normalize();
@@ -546,7 +550,8 @@ void Enemy::ChasePlayer() {
 	//プレイヤーの方向ベクトルを取得
 	Vector3 toPlayerVec = playerPos - m_position;
 	toPlayerVec.Normalize();
-	toPlayerVec.y = 0.0f;
+	//Y・ｽﾌ擾ｿｽ・ｽ・ｽ・ｽK・ｽv・ｽﾈゑｿｽ
+	//toPlayerVec.y = m_firstPos.y;
 
 	//移動速度をリセット(加速させないため)
 	m_moveSpeed.x = 0.0f;
@@ -612,4 +617,27 @@ bool Enemy::IsStompedByPlayer() {
 	}
 
 	return true;	
+}
+
+
+void Enemy::DrawVectorToMovePos() {
+	Vector3 toMoveVec = m_toMovePos - m_position;
+
+	toMoveVec.Normalize();
+	toMoveVec *= 100.0f;
+	Vector3 origin = m_position;
+	origin.y = m_position.y + 50.0f;
+
+	g_k2Engine->DrawVector(toMoveVec, origin);
+}
+
+
+void Enemy::DrawVectorFront() {
+	Vector3 front = Vector3::AxisZ;
+	m_rotation.Apply(front);
+	front.Normalize();
+	front *= 100.0f;
+	Vector3 origin = m_position;
+	origin.y = m_position.y + 50.0f;
+	g_k2Engine->DrawVector(front, origin);
 }

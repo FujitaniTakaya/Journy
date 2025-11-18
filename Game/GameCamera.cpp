@@ -11,6 +11,8 @@ void GameCamera::SetCamera(const CameraInfo& camera) {
 		true,
 		camera.cameraCollisionScl
 		);
+	m_springCamera.SetNear(1.0f);
+	m_springCamera.SetFar(10000000000.0f);
 }
 
 
@@ -26,9 +28,10 @@ GameCamera::~GameCamera() {
 
 
 void GameCamera::Update() {
+	if (!m_player) return;
 	Vector3 target = m_player->GetPosition();
 	target.y += 80.0f;
-	target += g_camera3D->GetForward() * 20.0f;
+	target += g_camera3D->GetForward() * 40.0f;
 
 	Vector3 toCameraPosOld = m_toCameraPos;
 
@@ -63,4 +66,23 @@ void GameCamera::Update() {
 	m_springCamera.SetTarget(target);
 	m_springCamera.SetPosition(pos);
 	m_springCamera.Update();
+
+	IsNearPlayer();
+}
+
+
+void GameCamera::IsNearPlayer()  {
+	if (!m_player) return;
+	Vector3 cameraPos = g_camera3D->GetPosition();
+	Vector3 playerPos = m_player->GetPosition();
+	//プレイヤーからカメラのベクトルを取り、距離を計算
+	float dis = (cameraPos - playerPos).Length();
+	//距離が100未満であれば近い
+	bool isNear = true;
+	if (dis < 100.0f) {
+		m_player->SetIsNearCamera(isNear);
+	}
+	else {
+		m_player->SetIsNearCamera(!isNear);
+	}
 }

@@ -236,7 +236,7 @@ public:
 	virtual ~Enemy(){}
 	virtual bool Start()override = 0;
 	virtual void Update() override = 0;
-	void Render(RenderContext& rc)override;
+	virtual void Render(RenderContext& rc)override = 0;
 
 	/**	それぞれのスタート処理で呼び出す関数*/
 protected:
@@ -270,10 +270,15 @@ protected:
 
 	/** 次の目的地を決める*/
 	inline void DecideToMovePos() {
-		m_toMovePos.x = rand() % 401 - 200;
-		m_toMovePos.z = rand() % 401 - 200;
+		m_toMovePos.x = rand() % 601 - 300;
+		m_toMovePos.z = rand() % 601 - 300;
 		m_toMovePos += m_firstPos;
-		m_toMovePos.y = 0.0f;
+		m_toMovePos.y = m_firstPos.y;
+	}
+
+	inline std::thread waitThread() {
+		this->RandomWait(m_isWait);
+		return std::thread();
 	}
 
 	inline void RandomWait(std::atomic<bool>& waitFlag) {
@@ -306,32 +311,40 @@ private:
 
 	/**	プレイヤー踏まれたかどうか*/
 	bool IsStompedByPlayer();
+
+
+protected:
+	// ・ｽf・ｽo・ｽb・ｽO・ｽp
+	void DrawVectorToMovePos();
+
+	void DrawVectorFront();
 };
 
 
 class Normal : public Enemy {
 public:
 	~Normal() override{
-		DeleteCollision();
+		g_k2Engine->SetDrawVectorDisable();
 	}
 	bool Start()override;
 	void Update()override;
+	void Render(RenderContext& rc)override;
 };
 
 class Gimmick : public Enemy {
 public:
 	~Gimmick() override{
-		DeleteCollision();
 	}
 	bool Start()override;
 	void Update()override;
+	void Render(RenderContext& rc)override {}
 };
 
 class Boss : public Enemy {
 public:
 	~Boss() override{
-		DeleteCollision();
 	}
 	bool Start()override;
 	void Update()override;
+	void Render(RenderContext& rc)override {}
 };

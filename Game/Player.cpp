@@ -561,13 +561,14 @@ void Player::Update() {
 
 	//更新
 	UpdateTRSInfo();
-	UpdateCollisionInfo();
+	
+	//UpdateCollisionInfo();
 	UpdateAtkCollisionInfo();
 }
 
 
 void Player::Render(RenderContext& rc) {
-	if (GetModelRender()) m_modelRender.Draw(rc);
+	if (GetModelRender() && !m_isNearCamera) m_modelRender.Draw(rc);
 }
 
 
@@ -597,8 +598,7 @@ void Player::InitializeModel() {
 	}
 
 	const Vector2 charConScl = m_status->GetCharConInfo();
-	SetFirstPosition(m_status->GetStartPos());
-	SetTRS(m_position);
+	SetTRS(m_position, m_rotation, m_scale);
 
 	//必要な情報をローカル変数へ代入
 	const char* unityFilePath = PlayerStatus::unity_file_path;
@@ -609,7 +609,7 @@ void Player::InitializeModel() {
 	//キャラクターコントローラーを初期化
 	m_characterController.Init(charConScl.x, charConScl.y, m_position);
 	//プレイヤーの
-	UpdateTRSInfo();
+	//UpdateTRSInfo();
 }
 
 
@@ -665,7 +665,12 @@ void Player::Move() {
 
 
 void Player::Jump() {
-	
+	if (IsJump()) {
+		m_moveSpeed.x -= 0.00000001f;
+		m_moveSpeed.z -= 0.00000001f;
+	}
+
+
 	if (m_isKillEnemy) {
 		StompJump();
 	}
@@ -692,7 +697,6 @@ void Player::TripleJump() {
 	}
 
 	//滞空時間をリセット
-
 	m_status->ResetFlyingTime();
 	
 	//Y方向の移動速度を0にする
@@ -717,7 +721,7 @@ void Player::TripleJump() {
 
 
 	//ジャンプボタンが押されていなければ
-	if (!g_pad[0]->IsTrigger(enButtonB)) {
+	if (!g_pad[0]->IsTrigger(enButtonA)) {
 		return;
 	}
 
@@ -737,23 +741,24 @@ void Player::StompJump() {
 
 	if (!IsJump()) m_isKillEnemy = false;
 
-	//if (!m_isKillEnemy) return;
 
 	float jumpPower = 0.0f;
 	
 	
 	if (!m_status->CanStompJump()) {
+		//敵を倒したフラグをリセット
 		m_isKillEnemy = false;
 
 		//滞空時間をリセット
 		m_status->ResetFlyingTime();
+
 		//落下速度を0にする
 		m_moveSpeed.y = 0.0f;
 		jumpPower = m_status->GetJumpInfo(EnJumpPower::enJumpPower_First).GetJumpPower();
 		m_moveSpeed.y += jumpPower;
 		return;
 	}
-	if (!g_pad[0]->IsTrigger(enButtonB)) {
+	if (!g_pad[0]->IsTrigger(enButtonA)) {
 		return;
 	}
 
