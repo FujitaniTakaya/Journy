@@ -32,13 +32,6 @@ enum EnJumpPower {
 	enJumpPower_Third,
 	enJumpPower_Num
 };
-//
-//
-//template<typename E>
-//constexpr auto to_underlying(E e) noexcept {
-//	static_assert(std::is_enum_v<E>, "to_underlying can only be used with enum types");)
-//	return static_cast<std::underlying_type_t<E>>(e);
-//}
 /*******************************/
 
 
@@ -169,7 +162,7 @@ private:
 
 	//!	移動速度の配列
 	const std::array<float,EnMoveState::enMoveState_Num> move_speed = {
-		200.0f,	400.0f 		
+		200.0f,	500.0f 		
 	};
 	
 	//!	ジャンプ情報の配列
@@ -204,8 +197,8 @@ public:
 
 		m_animation_info({
 		std::make_unique<PlayerAnimInfo>("idle", 1.0f),
-		std::make_unique<PlayerAnimInfo>("walk", 1.2f),
-		std::make_unique<PlayerAnimInfo>("run", 1.3f),
+		std::make_unique<PlayerAnimInfo>("walk", 1.3f),
+		std::make_unique<PlayerAnimInfo>("run", 1.5f),
 		std::make_unique<PlayerAnimInfo>("jump", 1.0f)
 		}),
 
@@ -233,7 +226,7 @@ public:
 	*/
 	bool CanStompJump() {
 		AddOneFrame(m_standingTime);
-		if (m_standingTime <= can_next_jump_time) { return true; }
+		if (m_standingTime <= can_stomp_jump_time) { return true; }
 		//if (m_standingTime <= can_stomp_jump_time) { return true; }
 		return false;
 	}

@@ -26,16 +26,16 @@ protected:
 
 public:
 	Character() : m_status(std::make_unique<GameStatus>()) {}
-	~Character(){}
+	virtual ~Character(){}
 
-	virtual bool Start()override { return true; }
-	virtual void Update() override {}
-	virtual void Render(RenderContext& rc) override {}
+	bool Start()override = 0;
+	void Update() override = 0;
+	void Render(RenderContext& rc) override = 0;
 
 
 public:
 	// 初期化
-	virtual void InitializeCharacter(){}
+	virtual void InitializeCharacter()= 0;
 
 private:
 	// このクラスでしか呼ばれないもの
@@ -111,7 +111,7 @@ public:
 protected:
 	inline void UpdateTRSInfo() {
 		//キャラコンに速度を加算して位置を更新
-		m_position = m_characterController.Execute(m_moveSpeed, GameStatus::AddOneFrame());
+		m_position = m_characterController.Execute(m_moveSpeed, 1.0f / 60.0f);
 		
 		//モデルの位置、回転、スケールを更新
 		m_modelRender.SetTRS(m_position, m_rotation, m_scale);
@@ -120,9 +120,8 @@ protected:
 
 
 	inline void UpdateCollisionInfo() {
-		if (!m_characterCollision) {
-			return;
-		}
+		if (!m_characterCollision) return;
+		
 		m_characterCollision->SetIsEnable(true);
 		m_charCollisionPos = m_position;
 		m_charCollisionPos.y += m_charConScl.y * 3/4;
