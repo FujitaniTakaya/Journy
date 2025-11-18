@@ -326,9 +326,9 @@ private:
 public:
 	EnemyStatus() : 
 		enemy_info({
-		std::make_unique<EnemyInfo>("normalEnemy/NormalEnemy",25.0f, 20.0f),
-		std::make_unique<EnemyInfo>("gimmickEnemy/GimmickEnemy",25.0f, 30.0f),	
-		std::make_unique<EnemyInfo>("bossEnemy/BossEnemy",50.0f, 45.0f)
+		std::make_unique<EnemyInfo>("normalEnemy/normalEnemy",25.0f, 20.0f),
+		std::make_unique<EnemyInfo>("gimmickEnemy/gimmickEnemy",25.0f, 30.0f),	
+		std::make_unique<EnemyInfo>("bossEnemy/bossEnemy",50.0f, 45.0f)
 		}),
 
 
