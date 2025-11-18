@@ -236,7 +236,7 @@ public:
 	virtual ~Enemy(){}
 	virtual bool Start()override = 0;
 	virtual void Update() override = 0;
-	void Render(RenderContext& rc)override;
+	virtual void Render(RenderContext& rc)override = 0;
 
 	/**	‚»‚ê‚¼‚ê‚ÌƒXƒ^[ƒgˆ—‚ÅŒÄ‚Ño‚·ŠÖ”*/
 protected:
@@ -270,10 +270,15 @@ protected:
 
 	/** Ÿ‚Ì–Ú“I’n‚ğŒˆ‚ß‚é*/
 	inline void DecideToMovePos() {
-		m_toMovePos.x = rand() % 401 - 200;
-		m_toMovePos.z = rand() % 401 - 200;
+		m_toMovePos.x = rand() % 601 - 300;
+		m_toMovePos.z = rand() % 601 - 300;
 		m_toMovePos += m_firstPos;
-		m_toMovePos.y = 0.0f;
+		m_toMovePos.y = m_firstPos.y;
+	}
+
+	inline std::thread waitThread() {
+		this->RandomWait(m_isWait);
+		return std::thread();
 	}
 
 	inline void RandomWait(std::atomic<bool>& waitFlag) {
@@ -306,6 +311,13 @@ private:
 
 	/**	ƒvƒŒƒCƒ„[“¥‚Ü‚ê‚½‚©‚Ç‚¤‚©*/
 	bool IsStompedByPlayer();
+
+
+protected:
+	// ï¿½fï¿½oï¿½bï¿½Oï¿½p
+	void DrawVectorToMovePos();
+
+	void DrawVectorFront();
 };
 
 
@@ -325,6 +337,7 @@ public:
 	}
 	bool Start()override;
 	void Update()override;
+	void Render(RenderContext& rc)override {}
 };
 
 class Boss : public Enemy {
@@ -334,4 +347,5 @@ public:
 	}
 	bool Start()override;
 	void Update()override;
+	void Render(RenderContext& rc)override {}
 };
