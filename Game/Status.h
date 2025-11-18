@@ -190,9 +190,9 @@ private:
 public:
 	PlayerStatus() :
 		m_jump_info({
-		std::make_unique<JumpInfo>(320.0, 1.0f),
-		std::make_unique<JumpInfo>(500.0, 0.8f),
-		std::make_unique<JumpInfo>(800.0, 0.3f)
+		std::make_unique<JumpInfo>(500.0, 1.0f),
+		std::make_unique<JumpInfo>(700.0, 0.8f),
+		std::make_unique<JumpInfo>(1000.0, 0.3f)
 		}),
 
 		m_animation_info({
@@ -202,14 +202,18 @@ public:
 		std::make_unique<PlayerAnimInfo>("jump", 1.0f)
 		}),
 
-		m_maxLife(3), 
-		m_life(m_maxLife), 
+		m_maxLife(5), 
+		m_life(3), 
 		m_standingTime(0.0f)
 	{}
 
 
 /**	プレイヤーステータスゲッター関数*/
 public:
+	const int& GetLife() const { return m_life; }
+
+
+
 	/**
 	*	@brief 次の段階のジャンプに切り替え可能かどうか
 	*/

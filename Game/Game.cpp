@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "GameCamera.h"
 #include "Enemy.h"
+#include "UI.h"
 
 bool Game::Start()
 {
@@ -24,16 +25,18 @@ bool Game::Start()
 			return true;
 		}
 		if (objData.EqualObjectName(L"normalEnemy")) {
-			for (auto enemy : m_firstStageEnemies) {
-				enemy = NewGO<Normal>(0, "enemy");
-				enemy->SetFirstPosition(objData.position);
-				enemy->SetTRS(objData.position, objData.rotation, objData.scale);
-			}
+			m_firstStageEnemyCount;
+			auto enemy = m_firstStageEnemies;
+			enemy[m_firstStageEnemyCount] = NewGO<Normal>(0, "enemy");
+			enemy[m_firstStageEnemyCount]->SetFirstPosition(objData.position);
+			enemy[m_firstStageEnemyCount]->SetTRS(objData.position, objData.rotation, objData.scale);
+			m_firstStageEnemyCount++;
 			return true;
 		}
 
 	});
 	
+	m_ui = NewGO<UI>(0, "ui");
 	m_gameCamera = NewGO<GameCamera>(0, "gameCamera");
 	DeleteGO(m_skyCube);
 

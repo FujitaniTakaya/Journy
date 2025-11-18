@@ -298,6 +298,8 @@ public:
 	inline void SetIsNearCamera(const bool isNear) { m_isNearCamera = isNear; }
 
 
+	inline PlayerStatus* GetStatus()const { return m_status.get(); }
+
 
 
 
