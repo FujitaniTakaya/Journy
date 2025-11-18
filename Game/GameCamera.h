@@ -27,9 +27,9 @@ public:
 private:
 	void SetCamera(const CameraInfo& camera);
 
-private:
-	
+	void IsNearPlayer();
 
+private:
 	Player* m_player = nullptr;
 	Vector3 m_toCameraPos = Vector3::Zero;
 	SpringCamera m_springCamera;

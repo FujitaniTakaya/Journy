@@ -63,4 +63,23 @@ void GameCamera::Update() {
 	m_springCamera.SetTarget(target);
 	m_springCamera.SetPosition(pos);
 	m_springCamera.Update();
+
+	IsNearPlayer();
+}
+
+
+void GameCamera::IsNearPlayer()  {
+	if (!m_player) return;
+	Vector3 cameraPos = g_camera3D->GetPosition();
+	Vector3 playerPos = m_player->GetPosition();
+	//�v���C���[����J�����̃x�N�g������A������v�Z
+	float dis = (cameraPos - playerPos).Length();
+	//������100�����ł���΋߂�
+	bool isNear = true;
+	if (dis < 100.0f) {
+		m_player->SetIsNearCamera(isNear);
+	}
+	else {
+		m_player->SetIsNearCamera(!isNear);
+	}
 }
