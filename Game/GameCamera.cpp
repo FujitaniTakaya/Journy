@@ -11,6 +11,8 @@ void GameCamera::SetCamera(const CameraInfo& camera) {
 		true,
 		camera.cameraCollisionScl
 		);
+	m_springCamera.SetNear(1.0f);
+	m_springCamera.SetFar(10000000000.0f);
 }
 
 
@@ -26,9 +28,10 @@ GameCamera::~GameCamera() {
 
 
 void GameCamera::Update() {
+	if (!m_player) return;
 	Vector3 target = m_player->GetPosition();
 	target.y += 80.0f;
-	target += g_camera3D->GetForward() * 20.0f;
+	target += g_camera3D->GetForward() * 40.0f;
 
 	Vector3 toCameraPosOld = m_toCameraPos;
 
@@ -72,9 +75,9 @@ void GameCamera::IsNearPlayer()  {
 	if (!m_player) return;
 	Vector3 cameraPos = g_camera3D->GetPosition();
 	Vector3 playerPos = m_player->GetPosition();
-	//ï¿½vï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½[ï¿½ï¿½ï¿½ï¿½Jï¿½ï¿½ï¿½ï¿½ï¿½Ìƒxï¿½Nï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½vï¿½Z
+	//ƒvƒŒƒCƒ„[‚©‚çƒJƒƒ‰‚ÌƒxƒNƒgƒ‹‚ðŽæ‚èA‹——£‚ðŒvŽZ
 	float dis = (cameraPos - playerPos).Length();
-	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½100ï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½Î‹ß‚ï¿½
+	//‹——£‚ª100–¢–ž‚Å‚ ‚ê‚Î‹ß‚¢
 	bool isNear = true;
 	if (dis < 100.0f) {
 		m_player->SetIsNearCamera(isNear);
