@@ -16,7 +16,7 @@ public:
 	bool Start()override;
 	void Render(RenderContext& rc)override;
 
-private:/*
+private:
 	Stage* m_firstStage = nullptr;
 	Stage* m_goalPole = nullptr;
 	std::array<Enemy*, 6> m_firstStageEnemies = { nullptr };
@@ -26,6 +26,6 @@ private:/*
 	SkyCube* m_skyCube = nullptr;
 	int m_skyCubeType = enSkyCubeType_Wild_2;
 	LevelRender m_stageLevelRender;
-	//Enemy* m_enemy = nullptr;
+	Enemy* m_enemy = nullptr;
 };
 

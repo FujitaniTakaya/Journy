@@ -263,24 +263,6 @@
 
 
 
-
-
-
-//class Player
-//{
-//private:
-//	app::PlayerStatePattern 
-//};
-
-
-
-
-
-
-
-
-
-
 /**
 * @brief プレイヤークラス
 */

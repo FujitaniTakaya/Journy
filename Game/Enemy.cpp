@@ -385,9 +385,9 @@ void Normal::Update() {
 	DrawVectorFront();
 	DrawVectorToMovePos();
 
-	//ï¿½sï¿½ï¿½ï¿½pï¿½^ï¿½[ï¿½ï¿½
+	//E½sE½E½E½pE½^E½[E½E½
 	Move();
-	//ï¿½ï¿½ï¿½Sï¿½ï¿½ï¿½ï¿½
+	//E½E½E½SE½E½E½E½
 	Death();
 
 	UpdateTRSInfo();
@@ -414,20 +414,6 @@ bool Boss::Start() {
 		return false;
 	}
 	return true;
-}
-
-
-void Normal::Update() {
-	if (!IsStart()) return;
-
-	//s“®ƒpƒ^[ƒ“
-	Move();
-	//€–S”»’è
-	Death();
-
-	UpdateTRSInfo();
-	UpdateCollisionInfo();
-
 }
 
 
@@ -567,7 +553,7 @@ void Enemy::ChasePlayer() {
 	//ƒvƒŒƒCƒ„[‚Ì•ûŒüƒxƒNƒgƒ‹‚ğæ“¾
 	Vector3 toPlayerVec = playerPos - m_position;
 	toPlayerVec.Normalize();
-	//Yï¿½Ìï¿½ï¿½ï¿½ï¿½Kï¿½vï¿½È‚ï¿½
+	//YE½Ìï¿½E½E½E½KE½vE½È‚ï¿½
 	//toPlayerVec.y = m_firstPos.y;
 
 	//ˆÚ“®‘¬“x‚ğƒŠƒZƒbƒg(‰Á‘¬‚³‚¹‚È‚¢‚½‚ß)

@@ -314,7 +314,7 @@ private:
 
 
 protected:
-	// ï¿½fï¿½oï¿½bï¿½Oï¿½p
+	// E½fE½oE½bE½OE½p
 	void DrawVectorToMovePos();
 
 	void DrawVectorFront();
@@ -324,16 +324,16 @@ protected:
 class Normal : public Enemy {
 public:
 	~Normal() override{
-		DeleteCollision();
+		
 	}
 	bool Start()override;
 	void Update()override;
+	void Render(RenderContext& rc)override;
 };
 
 class Gimmick : public Enemy {
 public:
 	~Gimmick() override{
-		DeleteCollision();
 	}
 	bool Start()override;
 	void Update()override;
@@ -343,7 +343,6 @@ public:
 class Boss : public Enemy {
 public:
 	~Boss() override{
-		DeleteCollision();
 	}
 	bool Start()override;
 	void Update()override;

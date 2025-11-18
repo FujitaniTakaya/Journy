@@ -35,7 +35,7 @@ enum EnJumpPower {
 /*******************************/
 
 
-struct GameStatus : IGameObject{
+struct GameStatus{
 private:
 	static constexpr float one_frame = 1.0f / 60.0f;		//1フレーム分の時間
 	static constexpr float max_flying_time = 0.5f;			//重力加速の最大フレーム数
