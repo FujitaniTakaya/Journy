@@ -283,20 +283,19 @@ struct EnemyStatus {
 	private:
 		//ファイル名
 		std::string fileName;
-		//モデルのスケール
-		Vector3 modelScale;
 		//キャラコンのスケール
 		Vector2 charConScale;
 
 	public:
 		EnemyInfo(
 			const std::string fileName,
-			const Vector3 modelScale,
-			const Vector2 charConScale) :
+			const float charConX,
+			const float charConY) :
 			fileName(fileName),
-			modelScale(modelScale),
-			charConScale(charConScale)
+			charConScale(charConX, charConY)
 		{}
+
+		EnemyInfo(){}
 
 		/// <summary>
 		/// エネミーモデルのファイルパスを取得
@@ -304,10 +303,6 @@ struct EnemyStatus {
 		const std::string GetModelFullPath()const {
 			return std::string(FILE_PATH) + fileName + std::string(FILE_EXTENSTION);
 		}
-
-
-		/**	モデルのスケールを取得*/
-		const Vector3& GetModelScale()const { return modelScale; }
 		/**	キャラコンのスケールを取得*/
 		const Vector2& GetCharConScale()const { return charConScale; }
 	};
@@ -315,7 +310,7 @@ struct EnemyStatus {
 
 
 public:
-	static constexpr float CHASE_SPEED = 60.0f;				//プレイヤーを追従するスピード
+	static constexpr float CHASE_SPEED = 100.0f;				//プレイヤーを追従するスピード
 	static constexpr float ROTATE_SPEED = 1.5f;				//回転するスピード
 	static constexpr float FRONT_ANGLE = 0.9999f;			//正面方向の許容値(コサイン値)
 
@@ -327,15 +322,18 @@ private:
 public:
 	EnemyStatus() : 
 		enemy_info({
-			std::make_unique<EnemyInfo>(EnemyInfo{"normalEnemy/NormalEnemy",
-			{3.0f, 3.0f, 3.5f}, {25.0f, 20.0f}}),
-			
-			std::make_unique<EnemyInfo>(EnemyInfo{ "gimmickEnemy/GimmickEnemy",
-			{2.8f, 2.0f, 2.8f}, {25.0f, 30.0f} }),
-			
-			std::make_unique<EnemyInfo>(EnemyInfo{ "bossEnemy/BossEnemy",
-			{1.0f, 1.2f, 1.0f}, {50.0f, 45.0f} })
+		std::make_unique<EnemyInfo>("normalEnemy/NormalEnemy",25.0f, 20.0f),
+		std::make_unique<EnemyInfo>("gimmickEnemy/GimmickEnemy",25.0f, 30.0f),	
+		std::make_unique<EnemyInfo>("bossEnemy/BossEnemy",50.0f, 45.0f)
 		}),
+
+
+		/*m_animation_info({
+		std::make_unique<PlayerAnimInfo>("idle", 1.0f),
+		std::make_unique<PlayerAnimInfo>("walk", 1.3f),
+		std::make_unique<PlayerAnimInfo>("run", 1.5f),
+		std::make_unique<PlayerAnimInfo>("jump", 1.0f)
+			}),*/
 
 		walk_speed({
 			20.0f, 30.0f, 40.0f
