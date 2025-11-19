@@ -1,43 +1,58 @@
 #pragma once
 
+enum EnTimer {
+	enTimer_OneSecond,
+	enTimer_TenSecond,
+	enTimer_HanSecond,
+	enTimer_Num,
+};
+
 
 namespace UIInfo {
 	namespace Life {
 		constexpr int MAX_HP = 5;
 	}
-	
+
 
 	namespace Timer {
-		constexpr int ONE_SECOND = 1;
-		constexpr int ONE_MINUTE = 60;
+		constexpr int ONE_SECOND = 1;			//1	 ïb
+		constexpr int TEN_SECOND = 10;			//10 ïb
+		constexpr int HAN_SECOND = 100;			//100ïb
+
+		constexpr float TIME_LIMIT = 300.0f;	//300ïb
 	}
-	
+	const Vector3 TIMER_POS[enTimer_Num] = {
+			{  500.0f, 300.0f, 0.0f },	//1ïb
+			{  460.0f, 300.0f, 0.0f },	//10ïb
+			{  420.0f, 300.0f, 0.0f }	//100ïb
+	};
 }
+
+
+struct Life {
+	SpriteRender lifeSpriteRender;
+	bool isActive = true;
+};
+
+struct Timer {
+	Timer() : 
+		nowTime(0)
+	{}
+
+	int nowTime;
+	SpriteRender timerSpriteRender;
+};
 
 
 class Player;
 
 class UI : public IGameObject{
-
 private:
-	struct Life {
-		SpriteRender spriteRender;
-		bool isActive = true;
-	};
 	std::array<Life, UIInfo::Life::MAX_HP> m_life;
-	FontRender m_timerFontRender;
-	FontRender m_scoreFontRender;
-
+	std::array<Timer, enTimer_Num> m_timer;
 	float m_gameTimer = 0.0f;
-	int m_second = 00;
-	int m_minute = 00;
-	std::array<wchar_t, FontRender::MAX_TEXT_SIZE> m_timerText;
-
+	float m_nowTime = 0.0f;
 	float m_score = 0.0f;
-	std::array<wchar_t, FontRender::MAX_TEXT_SIZE> m_scoreText;
-
-
-	std::thread m_timerThread;
 
 
 private:
@@ -46,9 +61,9 @@ private:
 
 public:
 
-	UI() : m_gameTimer(0.0f)
-		,m_second(0)
-		,m_minute(0)
+	UI() : 
+		m_gameTimer(0.0f)
+		, m_nowTime(UIInfo::Timer::TIME_LIMIT)
 		,m_score(0)
 	{}
 
@@ -58,44 +73,25 @@ public:
 	bool Start()override;
 	void Update()override;
 	void Render(RenderContext& rc)override {
-		m_timerFontRender.Draw(rc);
-		m_scoreFontRender.Draw(rc);
 		for (int i = 0; i < UIInfo::Life::MAX_HP; i++) {
-			if (m_life[i].isActive) m_life[i].spriteRender.Draw(rc);
+			if (m_life[i].isActive) m_life[i].lifeSpriteRender.Draw(rc);
+		}
+		for (int i = 0; i < enTimer_Num; i++) {
+			m_timer[i].timerSpriteRender.Draw(rc);
 		}
 	}
 	
 
-public:
+	/** ëÃóÕÇÃèÓïÒÇçXêVÇ∑ÇÈ */
 	void UpdateLife();
 
 
+
 private:
-	inline void UpdateUI() {
-		UpdateSecond();
-		UpdateMinute();
-		UpdateTimerText();
-	}
+	/** åªç›ÇÃéûä‘Çåvë™Ç∑ÇÈ */
+	void MeasureNowTime();
 
-
-
-	inline void UpdateSecond() {		
-		if (m_gameTimer >= UIInfo::Timer::ONE_SECOND) {
-			m_gameTimer = 0.0f;
-			m_second++;
-		}
-	}
-
-	inline void UpdateMinute() {
-		if (m_second >= UIInfo::Timer::ONE_MINUTE) {
-			m_second = 0;
-			m_minute++;
-		}
-	}
-
-	inline void UpdateTimerText() {
-		swprintf_s(m_timerText.data(), m_timerText.size(), L"Time: %02d:%02d", m_minute, m_second);	
-		m_timerFontRender.SetText(m_timerText.data());
-	}
+	/** É^ÉCÉ}Å[ÇçXêVÇ∑ÇÈ */
+	void UpdateTimer();
 };
 
