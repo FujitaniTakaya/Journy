@@ -20,7 +20,7 @@ public:
 private:
 	Stage* m_firstStage = nullptr;
 	Stage* m_goalPole = nullptr;
-	std::array<Enemy*, 1> m_firstStageEnemies = { nullptr };
+	std::array<Enemy*, 7> m_firstStageEnemies = { nullptr };
 	int m_firstStageEnemyCount = 0;
 	int m_floorCount = 0;
 	Player* m_player = nullptr;
