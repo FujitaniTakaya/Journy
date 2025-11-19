@@ -8,7 +8,7 @@
 
 bool Game::Start()
 {
-	m_stageLevelRender.Init("Assets/level/attachEnemy.tkl", [&](LevelObjectData& objData) {
+	m_stageLevelRender.Init("Assets/stage/firstStage/stage.tkl", [&](LevelObjectData& objData) {
 		if (objData.EqualObjectName(L"unityChan")) {
 			m_player = NewGO<Player>(0, "player");
 			m_player->SetTRS(objData.position,objData.rotation,objData.scale);
