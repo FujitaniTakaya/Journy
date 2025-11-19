@@ -36,7 +36,7 @@ bool Game::Start()
 
 	});
 	
-	m_ui = NewGO<UI>(0, "ui");
+	m_ui = NewGO<UI>(1, "ui");
 	m_gameCamera = NewGO<GameCamera>(0, "gameCamera");
 	DeleteGO(m_skyCube);
 
