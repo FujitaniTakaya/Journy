@@ -14,13 +14,13 @@ bool Game::Start()
 			m_player->SetTRS(objData.position,objData.rotation,objData.scale);
 			return true;
 		}
-		if (objData.EqualObjectName(L"stageGround")) {
-			m_firstStage = NewGO<First>(0);
+		if (objData.EqualObjectName(L"firstStageGround")) {
+			m_firstStage = NewGO<First>(0, "firstStage");
 			m_firstStage->SetTRS(objData.position, objData.rotation, objData.scale);
 			return true;
 		}
 		if (objData.EqualObjectName(L"goalPole")) {
-			m_goalPole = NewGO<GoalPole>(0);
+			m_goalPole = NewGO<GoalPole>(0, "goalPole");
 			m_goalPole->SetTRS(objData.position, objData.rotation, objData.scale);
 			return true;
 		}
