@@ -3,7 +3,7 @@
 
 
 bool First::Start(){
-	SetStage("firstStage");
+	SetStage("firstStageGround");
 	return true;
 }
 
