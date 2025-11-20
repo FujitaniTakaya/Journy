@@ -4,6 +4,15 @@
 
 #include <algorithm>
 
+
+namespace {
+	std::string GetNumberFilePath(int number)
+	{
+		return "Assets/font/number/pngFold/" + std::to_string(number) + ".DDS";
+	}
+}
+
+
 bool UI::Start() {
 	m_player = FindGO<Player>("player");
 
