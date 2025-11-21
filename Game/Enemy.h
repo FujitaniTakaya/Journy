@@ -216,6 +216,7 @@
 
 
 class Player;
+class UI;
 
 class Enemy : public Character {
 private:
@@ -225,6 +226,7 @@ private:
 
 protected:	
 	Player* m_player = nullptr;
+	UI* m_ui = nullptr;
 
 	Vector3 m_toMovePos = Vector3::Zero;
 	EnEnemy m_enemyType = EnEnemy::enEnemy_Num;
@@ -249,7 +251,7 @@ private:
 
 	void InitializeCollisionObject();
 
-	void InitializeGetOtherClassInfo();
+	void GetOtherClassInfo();
 
 
 protected:
