@@ -86,6 +86,16 @@ public:
 	void UpdateLife();
 
 
+private:
+	/** ï¿½^ï¿½Cï¿½}ï¿½[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+	void InitializeTimer();
+
+	/** ï¿½Xï¿½Rï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+	void InitializeScore();
+
+	/** ï¿½ï¿½ï¿½Cï¿½tï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+	void InitializeLife();
+
 
 private:
 	/** Œ»İ‚ÌŠÔ‚ğŒv‘ª‚·‚é */

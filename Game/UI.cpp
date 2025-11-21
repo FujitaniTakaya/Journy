@@ -13,19 +13,64 @@ namespace {
 }
 
 
+void UI::InitializeTimer() {
+	m_nowTime = nsUI::Timer::LIMIT;
+	m_timer[0].nowTime = 0;
+	m_timer[1].nowTime = 0;
+	m_timer[2].nowTime = 3;
+
+
+	for (int i = 0; i < enTimer_Num; i++) {
+		int fileNum = m_timer[i].nowTime;
+		UpdateSpriteInfo(
+			&m_timer[i].spriteRender
+			, nsUI::Timer::POS[i]
+			, nsUI::Timer::SCALE
+			, GetNumberFilePath(fileNum));
+	}
+}
+
+
+void UI::InitializeScore() {
+	m_nowScore = 0;
+	for (int i = 0; i < enMaxScoreDigit; i++) {
+		m_score[i].nowScore = 0;
+
+		int fileNum = m_score[i].nowScore;
+
+		UpdateSpriteInfo(
+			&m_score[i].spriteRender
+			, nsUI::Score::POS[i]
+			, nsUI::Score::SCALE
+			, GetNumberFilePath(fileNum)
+		);
+	}
+
+}
+
+
+void UI::InitializeLife() {
+	for (int i = 0; i < nsUI::Life::MAX; i++) {
+		m_life[i].isActive = true;
+
+		UpdateSpriteInfo(
+			&m_life[i].spriteRender
+			, nsUI::Life::POS[i]
+			, Vector3::One
+			, GetLifeFilePath()
+		);
+	}
+	UpdateLife();
+}
+
+
 bool UI::Start() {
 	m_player = FindGO<Player>("player");
 
-	for (int i = 0; i < UIInfo::Life::MAX_HP; i++) {
-		SpriteRender* lifePtr = &m_life[i].lifeSpriteRender;
-		lifePtr->Init("Assets/UI/life/life.dds", 50.0f, 50.0f);
-		lifePtr->SetPosition({ -700.0f - (i * 40.0f), 400.0f, 0.0f });
-		lifePtr->Update();
-	}
-	UpdateLife();	
+	InitializeTimer();
+	InitializeScore();
+	InitializeLife();
 
-	MeasureNowTime();
-	UpdateTimer();
 	return true;
 }
 
