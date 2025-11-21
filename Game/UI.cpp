@@ -6,9 +6,23 @@
 
 
 namespace {
-	std::string GetNumberFilePath(int number)
+	inline std::string GetNumberFilePath(int number)
 	{
-		return "Assets/font/number/pngFold/" + std::to_string(number) + ".DDS";
+		return "Assets/UI/number/dds/" + std::to_string(number) + ".DDS";
+	}
+
+	inline std::string GetLifeFilePath()
+	{
+		return "Assets/UI/life/life.dds";
+	}
+
+
+
+	void UpdateSpriteInfo(SpriteRender* spriteRender, const Vector3& pos, const Vector3& scl, std::string filePath) {
+		spriteRender->Init(filePath.c_str(), 30.0f, 50.0f);
+		spriteRender->SetPosition(pos);
+		spriteRender->SetScale(scl);
+		spriteRender->Update();
 	}
 }
 
@@ -82,7 +96,7 @@ void UI::Update() {
 
 void UI::UpdateLife() {
 	int hp = m_player->GetStatus()->GetLife();
-	for (int i = 0; i < UIInfo::Life::MAX_HP; i++) {
+	for (int i = 0; i < nsUI::Life::MAX; i++) {
 		if (i < hp) continue;
 		m_life[i].isActive = false;
 	}
@@ -90,46 +104,65 @@ void UI::UpdateLife() {
 
 
 void UI::MeasureNowTime() {
-	//現時点での秒数を保存
-	int oldSecond = m_timer[enTimer_OneSecond].nowTime;
-
 	//一フレーム加算
 	m_gameTimer += g_gameTime->GetFrameDeltaTime();
 	//経ったフレーム分の時間を引く
-	m_nowTime = UIInfo::Timer::TIME_LIMIT - m_gameTimer;
+	m_nowTime = nsUI::Timer::LIMIT - m_gameTimer;
 	//0秒以下にはしない
 	m_nowTime = max(0.0f, m_nowTime);
 
+	int harderDigitTimeCalc = 0;
 
-	//100の位の計算
-	//現在の残り時間を100で割った値を格納
-	m_timer[enTimer_HanSecond].nowTime = m_nowTime / UIInfo::Timer::HAN_SECOND;
-	
-	//残り何100秒か格納
-	float hanSec = UIInfo::Timer::HAN_SECOND * m_timer[enTimer_HanSecond].nowTime;
-	
-	//現在の残り時間から100の位を引いた値を10で割った値を格納
-	m_timer[enTimer_TenSecond].nowTime = (m_nowTime - hanSec) / UIInfo::Timer::TEN_SECOND;
-	
-	//残り何10秒か格納
-	float tenSec = UIInfo::Timer::TEN_SECOND * m_timer[enTimer_TenSecond].nowTime;
-	
-	//現在の残り時間から100と10の位を引いた値を1で割った値を格納
-	m_timer[enTimer_OneSecond].nowTime = (m_nowTime - hanSec - tenSec);
+	for (int i = enTimer_Num - 1; i >= 0; i--) {
+		int oldTime = m_timer[i].nowTime;
+		m_timer[i].nowTime = (m_nowTime - harderDigitTimeCalc) / nsUI::Timer::DIGIT[i];
+		harderDigitTimeCalc += m_timer[i].nowTime * nsUI::Timer::DIGIT[i];
 
-	if (oldSecond != m_timer[enTimer_OneSecond].nowTime) {
-		UpdateTimer();
+		if (oldTime == m_timer[i].nowTime) continue;
+
+		//時間が変化していたらスプライトを更新
+		int fileNum = m_timer[i].nowTime;
+
+		UpdateSpriteInfo(
+			&m_timer[i].spriteRender
+			, nsUI::Timer::POS[i]
+			, nsUI::Timer::SCALE
+			, GetNumberFilePath(fileNum)
+		);
 	}
-	//UpdateTimer();
 }
 
 
-void UI::UpdateTimer() {
-	for (int i = 0; i < enTimer_Num; i++) {
-		std::string fileName = std::to_string(m_timer[i].nowTime);
-		m_timer[i].timerSpriteRender.Init(("Assets/font/number/pngFold/" + fileName + ".DDS").c_str(), 30.0f, 50.0f);
-		m_timer[i].timerSpriteRender.SetPosition(UIInfo::TIMER_POS[i]);
-		//m_timer[i].timerSpriteRender.SetScale({ 10.0f, 10.0f, 10.0f });
-		m_timer[i].timerSpriteRender.Update();
+void UI::AddScore(float score) {
+	//スコアを加算
+	m_nowScore += score;
+	
+	//桁ごとのスコアを計算
+	int harderDigitScoreCalc = 0;
+
+	for (int i = enMaxScoreDigit - 1; i > 0; i--) {
+		//現在のスコアを保存
+		int oldScore = m_score[i].nowScore;
+				
+		//桁ごとのスコアを計算
+		//現在のスコアから、より大きい桁のスコアを引く
+		//桁の値で割る
+		m_score[i].nowScore = (m_nowScore - harderDigitScoreCalc) / nsUI::Score::DIGIT[i];
+		
+		//現在計算中桁のスコアを加算
+		harderDigitScoreCalc += m_score[i].nowScore * nsUI::Score::DIGIT[i];
+		
+		//スコアが変化していなかったら次の桁へ
+		if (oldScore == m_score[i].nowScore) continue;
+			
+		//スコアが変化していたらスプライトを更新
+		int fileNum = m_score[i].nowScore;
+		
+		UpdateSpriteInfo(
+			&m_score[i].spriteRender
+			, nsUI::Score::POS[i]
+			, nsUI::Score::SCALE
+			, GetNumberFilePath(fileNum)
+		);
 	}
 }
