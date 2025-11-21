@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Enemy.h"
 #include "Player.h"
+#include "UI.h"
 #include <random>
 #include <thread>
 
@@ -435,7 +436,7 @@ void Normal::Render(RenderContext& rc) {
 void Enemy::InitializeCharacter() {
 	InitializeModel();
 	//InitializeCollisionObject();
-	InitializeGetOtherClassInfo();
+	GetOtherClassInfo();
 }
 
 
@@ -459,8 +460,9 @@ void Enemy::InitializeCollisionObject() {
 }
 
 
-void Enemy::InitializeGetOtherClassInfo() {
+void Enemy::GetOtherClassInfo() {
 	m_player = FindGO<Player>("player");
+	m_ui = FindGO<UI>("ui");
 }
 
 
@@ -479,6 +481,10 @@ void Enemy::Death() {
 
 	//プレイヤーのキルフラグを立てる
 	m_player->SetIsKillEnemy(true);
+
+	//スコアを加算
+	m_ui->AddScore(nsUI::Score::TYPE[enScoreType_NormalEnemy]);
+
 	//エネミーを削除
 	DeleteGO(this);
 }

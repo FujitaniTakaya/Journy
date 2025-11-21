@@ -3,44 +3,127 @@
 enum EnTimer {
 	enTimer_OneSecond,
 	enTimer_TenSecond,
-	enTimer_HanSecond,
+	enTimer_HunSecond,
 	enTimer_Num,
 };
 
 
-namespace UIInfo {
+enum EnScoreType {
+	enScoreType_Coin = 0,
+	enScoreType_Item,
+	enScoreType_NormalEnemy,
+	enScoreType_GimmickEnemy,
+	enScoreType_BossEnemy,
+	enScoreType_TimeBonus,
+	enScoreType_Num
+};
+
+
+enum { enMaxScoreDigit = 6 };
+
+namespace nsUI {
 	namespace Life {
-		constexpr int MAX_HP = 5;
+		constexpr int MAX = 5;
+
+		const Vector3 POS[MAX] = {
+			{ -700.0f, 400.0f, 0.0f},	//1
+			{ -740.0f, 400.0f, 0.0f},	//2
+			{ -780.0f, 400.0f, 0.0f},	//3
+			{ -820.0f, 400.0f, 0.0f},	//4
+			{ -860.0f, 400.0f, 0.0f}	//5
+		};
+
 	}
 
 
 	namespace Timer {
 		constexpr int ONE_SECOND = 1;			//1	 •b
 		constexpr int TEN_SECOND = 10;			//10 •b
-		constexpr int HAN_SECOND = 100;			//100•b
+		constexpr int HUN_SECOND = 100;			//100•b
 
-		constexpr float TIME_LIMIT = 300.0f;	//300•b
+		constexpr float LIMIT = 300.0f;	//300•b
+
+		const Vector3 POS[enTimer_Num] = {
+			{  900.0f, 400.0f, 0.0f },	//1•b
+			{  860.0f, 400.0f, 0.0f },	//10•b
+			{  820.0f, 400.0f, 0.0f }	//100•b
+		};
+
+
+		const int DIGIT[enTimer_Num] = {
+			ONE_SECOND,		//1•b
+			TEN_SECOND,		//10•b
+			HUN_SECOND		//100•b
+		};
+
+
+		const Vector3 SCALE = { 1.5f, 1.5f, 1.0f };
 	}
-	const Vector3 TIMER_POS[enTimer_Num] = {
-			{  500.0f, 300.0f, 0.0f },	//1•b
-			{  460.0f, 300.0f, 0.0f },	//10•b
-			{  420.0f, 300.0f, 0.0f }	//100•b
-	};
+
+
+	namespace Score {
+		const Vector3 POS[enMaxScoreDigit] = {
+			{  600.0f, 400.0f, 0.0f },	//1
+			{  560.0f, 400.0f, 0.0f },	//10
+			{  520.0f, 400.0f, 0.0f },	//100
+			{  480.0f, 400.0f, 0.0f },	//1,000
+			{  440.0f, 400.0f, 0.0f },	//10,000
+			{  400.0f, 400.0f, 0.0f },	//10,0000
+		};
+
+		const int DIGIT[enMaxScoreDigit] = {
+			1,		//1
+			10,		//10
+			100,	//100
+			1000,	//1,000
+			10000,	//10,000
+			100000	//100,000
+		};
+
+		static const int MIN = 0;
+		static const int MAX = 999999;
+
+		const Vector3 SCALE = { 1.5f, 1.5f, 1.0f };
+
+		const int TYPE[enScoreType_Num] = {
+			10, //Coin
+			50, //Item
+			100,//NormalEnemy
+			150,//GimmickEnemy
+			500,//BossEnemy
+			20  //TimeBonus
+		};
+
+		
+	}
+	
 }
 
 
 struct Life {
-	SpriteRender lifeSpriteRender;
-	bool isActive = true;
+	Life() : 
+		isActive(false)
+	{}
+	bool isActive;
+	SpriteRender spriteRender;	
 };
 
 struct Timer {
 	Timer() : 
 		nowTime(0)
 	{}
-
 	int nowTime;
-	SpriteRender timerSpriteRender;
+	SpriteRender spriteRender;
+};
+
+
+struct Score {
+	Score() : 		
+		nowScore(0)
+	{}
+
+	int nowScore;
+	SpriteRender spriteRender;
 };
 
 
@@ -48,11 +131,12 @@ class Player;
 
 class UI : public IGameObject{
 private:
-	std::array<Life, UIInfo::Life::MAX_HP> m_life;
+	std::array<Life, nsUI::Life::MAX> m_life;
 	std::array<Timer, enTimer_Num> m_timer;
+	std::array<Score, enMaxScoreDigit> m_score;
 	float m_gameTimer = 0.0f;
 	float m_nowTime = 0.0f;
-	float m_score = 0.0f;
+	int m_nowScore = 0.0f;
 
 
 private:
@@ -63,8 +147,8 @@ public:
 
 	UI() : 
 		m_gameTimer(0.0f)
-		, m_nowTime(UIInfo::Timer::TIME_LIMIT)
-		,m_score(0)
+		, m_nowTime(nsUI::Timer::LIMIT)
+		,m_nowScore(0)
 	{}
 
 	~UI()noexcept {}
@@ -73,11 +157,14 @@ public:
 	bool Start()override;
 	void Update()override;
 	void Render(RenderContext& rc)override {
-		for (int i = 0; i < UIInfo::Life::MAX_HP; i++) {
-			if (m_life[i].isActive) m_life[i].lifeSpriteRender.Draw(rc);
+		for (int i = 0; i < nsUI::Life::MAX; i++) {
+			if (m_life[i].isActive) m_life[i].spriteRender.Draw(rc);
 		}
 		for (int i = 0; i < enTimer_Num; i++) {
-			m_timer[i].timerSpriteRender.Draw(rc);
+			m_timer[i].spriteRender.Draw(rc);
+		}
+		for (int i = 0; i < 6; i++) {
+			m_score[i].spriteRender.Draw(rc);
 		}
 	}
 	
@@ -86,12 +173,22 @@ public:
 	void UpdateLife();
 
 
+	void AddScore(float score);
+
+
+private:
+	/** ƒ^ƒCƒ}[‰Šú‰» */
+	void InitializeTimer();
+
+	/** ƒXƒRƒA‰Šú‰» */
+	void InitializeScore();
+
+	/** ƒ‰ƒCƒt‰Šú‰» */
+	void InitializeLife();
+
 
 private:
 	/** Œ»Ý‚ÌŽžŠÔ‚ðŒv‘ª‚·‚é */
 	void MeasureNowTime();
-
-	/** ƒ^ƒCƒ}[‚ðXV‚·‚é */
-	void UpdateTimer();
 };
 
