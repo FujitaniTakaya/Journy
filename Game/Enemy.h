@@ -324,14 +324,22 @@ protected:
 
 
 class Normal : public Enemy {
+private:
+	AnimationClip m_animationClip;		//ノーマルエネミーのアニメーションは一つだけ
+	std::unique_ptr<NormalStatus> m_status = nullptr;
+
 public:
+	Normal() : 
+		m_status(std::make_unique<NormalStatus>()) 
+	{}
 	~Normal() override{
-		g_k2Engine->SetDrawVectorDisable();
+		//g_k2Engine->SetDrawVectorDisable();
 	}
 	bool Start()override;
 	void Update()override;
 	void Render(RenderContext& rc)override;
 };
+
 
 class Gimmick : public Enemy {
 public:
@@ -341,6 +349,7 @@ public:
 	void Update()override;
 	void Render(RenderContext& rc)override {}
 };
+
 
 class Boss : public Enemy {
 public:

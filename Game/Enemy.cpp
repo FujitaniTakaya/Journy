@@ -369,10 +369,21 @@
 //}
 
 
+namespace {
+	namespace nsNormalEnemy {
+		constexpr int ANIM_WALK = 0;
+
+		const char* ANIM_FILE_PATH = "Assets/enemy/normalEnemy/anim/walk.tka";
+	}
+}
+
 bool Normal::Start() {
 	m_enemyType = EnEnemy::enEnemy_Normal;
 	InitializeCharacter();
+	m_animationClip.Load(nsNormalEnemy::ANIM_FILE_PATH);
+	m_animationClip.SetLoopFlag(true);
 	DecideToMovePos();
+
 	if (!m_player) {
 		return false;
 	}
@@ -383,15 +394,17 @@ bool Normal::Start() {
 void Normal::Update() {
 	if (!IsStart()) return;
 
-	DrawVectorFront();
-	DrawVectorToMovePos();
+	//DrawVectorFront();
+	//DrawVectorToMovePos();
 
 	Move();
 	Death();
 
 	m_moveSpeed.y = 0.0f;
-
+	m_modelRender.PlayAnimation(nsNormalEnemy::ANIM_WALK);
 	UpdateTRSInfo();
+
+	
 }
 
 bool Gimmick::Start() {
