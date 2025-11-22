@@ -12,7 +12,6 @@ bool Game::Start()
 		if (objData.EqualObjectName(L"unityChan")) {
 			m_player = NewGO<Player>(0, "player");
 			m_player->SetTRSIns().SetTransform(objData.position, objData.rotation, objData.scale);
-			m_player->GetCharacterController()->SetPosition(objData.position);
 			return true;
 		}
 		if (objData.EqualObjectName(L"firstStageGround")) {
