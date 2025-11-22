@@ -320,7 +320,8 @@ float4 PSMainCore(PSInput In, uniform int isSoftShadow)
     float metaric = metallicShadowSmoothTexture.SampleLevel(Sampler, In.uv, 0).r;
     //スムース
     float smooth = metallicShadowSmoothTexture.SampleLevel(Sampler, In.uv, 0).a;
-
+    smooth = 0.0f;
+    
     //影生成用のパラメータ。
     float shadowParam = metallicShadowSmoothTexture.Sample(Sampler, In.uv).g;
     

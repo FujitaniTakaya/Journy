@@ -335,15 +335,8 @@ public:
 		}),
 
 
-		/*m_animation_info({
-		std::make_unique<PlayerAnimInfo>("idle", 1.0f),
-		std::make_unique<PlayerAnimInfo>("walk", 1.3f),
-		std::make_unique<PlayerAnimInfo>("run", 1.5f),
-		std::make_unique<PlayerAnimInfo>("jump", 1.0f)
-			}),*/
-
 		walk_speed({
-			20.0f, 30.0f, 40.0f
+			30.0f, 50.0f, 40.0f
 		})
 	{}
 
@@ -360,9 +353,7 @@ public:
 };
 
 
-struct NormaStatus : public EnemyStatus {
-
-
+struct NormalStatus : public EnemyStatus {
 };
 
 

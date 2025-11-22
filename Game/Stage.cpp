@@ -3,19 +3,20 @@
 
 
 bool First::Start(){
-	SetStage("firstStage/firstStageGround");
+	SetStage("firstStage/ground/firstStageGround");
 	return true;
 }
 
 
-void First::Update() {
-
-}
+void First::Update() {}
 
 
 void First::Render(RenderContext& rc) {
 	if (GetModelRender()) m_modelRender.Draw(rc);
 }
+
+
+
 bool GoalPole::Start() {
 	SetStage("goalPole/goalPole");
 
