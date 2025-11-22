@@ -278,6 +278,8 @@ private:
 	bool m_isKillEnemy = false;
 	bool m_isNearCamera = false;
 
+	FontRender m_debugFont;
+
 
 public:
 	Player() : m_status(std::make_unique<PlayerStatus>()) {}
@@ -316,8 +318,8 @@ private:
 
 	/**	攻撃コリジョン情報更新	*/
 	inline void UpdateAtkCollisionInfo() {
-		m_atkCollision->SetPosition(m_position);
-		m_atkCollision->SetRotation(m_rotation);
+		m_atkCollision->SetPosition(m_transform.position);
+		m_atkCollision->SetRotation(m_transform.rotation);
 		m_atkCollision->Update();
 	}
 

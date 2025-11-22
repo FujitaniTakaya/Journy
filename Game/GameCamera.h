@@ -1,6 +1,6 @@
 #pragma once
 #include "camera/SpringCamera.h"
-
+#include "Actor.h"
 
 
 namespace {
@@ -18,21 +18,23 @@ namespace {
 
 class Player;
 
-class GameCamera : public IGameObject{
+class GameCamera : public Actor{
+private:
+	Player* m_player = nullptr;
+	Vector3 m_toCameraPos = Vector3::Zero;
+	SpringCamera m_springCamera;
+
+
 public:
 	GameCamera();
 	~GameCamera();
 	bool Start()override { return true; }
 	void Update()override;
-	
+	void Render(RenderContext& rc)override {}
+
 private:
 	void SetCamera(const CameraInfo& camera);
 
 	void IsNearPlayer();
-
-private:
-	Player* m_player = nullptr;
-	Vector3 m_toCameraPos = Vector3::Zero;
-	SpringCamera m_springCamera;
 };
 

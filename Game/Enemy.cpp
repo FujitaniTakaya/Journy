@@ -391,8 +391,7 @@ void Normal::Update() {
 
 	m_moveSpeed.y = 0.0f;
 
-	UpdateTRSInfo();	
-	UpdateCollisionInfo();
+	UpdateTRSInfo();
 }
 
 bool Gimmick::Start() {
@@ -424,7 +423,6 @@ void Gimmick::Update() {
 void Boss::Update() {
 	Move();
 	UpdateTRSInfo();
-	UpdateCollisionInfo();
 }
 
 
@@ -446,17 +444,11 @@ void Enemy::InitializeModel() {
 	const std::string filePath = m_status.GetEnemyInfo(m_enemyType).GetModelFullPath();
 	m_modelRender.Init(filePath.c_str());
 	m_charConScl = m_status.GetEnemyInfo(m_enemyType).GetCharConScale();
-	m_characterController.Init(m_charConScl.x, m_charConScl.y, m_position);
+	m_characterController.Init(m_charConScl.x, m_charConScl.y, m_transform.position);
 
-	//m_position.y += 30.0f;
+	m_firstPos = m_transform.position;
+
 	UpdateTRSInfo();
-}
-
-
-void Enemy::InitializeCollisionObject() {
-	m_characterCollision = new CollisionObject;
-	
-	m_characterCollision->CreateCapsule(m_position, m_rotation, m_charConScl.x, m_charConScl.y);
 }
 
 
@@ -515,11 +507,11 @@ void Enemy::RandomWalkAround() {
 	m_moveSpeed.x = 0.0f;
 	m_moveSpeed.z = 0.0f;
 
-	Vector3 dif = m_toMovePos - m_position;
+	Vector3 dif = m_toMovePos - m_transform.position;
 	dif.Normalize();
 	Vector3 front = Vector3::AxisZ;
 	front.Normalize();
-	m_rotation.Apply(front);
+	m_transform.rotation.Apply(front);
 	//内積を求める
 	float dot = Dot(front, dif);
 
@@ -531,12 +523,12 @@ void Enemy::RandomWalkAround() {
 		//0.0fより小さければ右回転
 		if (cross.y < 0.0f) {
 			//右回転
-			m_rotation.AddRotationDegY(-EnemyStatus::ROTATE_SPEED);
+			m_transform.rotation.AddRotationDegY(-EnemyStatus::ROTATE_SPEED);
 		}
 		//0.0fより大きければ左回転
 		else if (cross.y > 0.0f) {
 			//左回転
-			m_rotation.AddRotationDegY(EnemyStatus::ROTATE_SPEED);
+			m_transform.rotation.AddRotationDegY(EnemyStatus::ROTATE_SPEED);
 		}		
 		return;
 	}
@@ -552,9 +544,9 @@ void Enemy::RandomWalkAround() {
 
 void Enemy::ChasePlayer() {
 	//プレイヤーの位置を取得
-	Vector3 playerPos = m_player->GetPosition();
+	Vector3 playerPos = m_player->SetTRSIns().GetPosition();
 	//プレイヤーの方向ベクトルを取得
-	Vector3 toPlayerVec = playerPos - m_position;
+	Vector3 toPlayerVec = playerPos - m_transform.position;
 	toPlayerVec.Normalize();
 	//Y・ｽﾌ擾ｿｽ・ｽ・ｽ・ｽK・ｽv・ｽﾈゑｿｽ
 	//toPlayerVec.y = m_firstPos.y;
@@ -571,9 +563,9 @@ void Enemy::ChasePlayer() {
 
 
 const bool Enemy::IsFoundPlayer() {
-	Vector3 playerPos = m_player->GetPosition();
+	Vector3 playerPos = m_player->SetTRSIns().GetPosition();
 	//エネミーからプレイヤーへのベクトルを取得
-	Vector3 toPlayerVec = playerPos - m_position;
+	Vector3 toPlayerVec = playerPos - m_transform.position;
 	//プレイヤーまでの距離を取得
 	float distance = toPlayerVec.Length();
 	
@@ -582,7 +574,7 @@ const bool Enemy::IsFoundPlayer() {
 	
 	//エネミーの前方向ベクトルを取得
 	Vector3 front = Vector3::AxisZ;
-	m_rotation.Apply(front);
+	m_transform.rotation.Apply(front);
 	front.Normalize();
 		
 	
@@ -615,8 +607,8 @@ bool Enemy::IsStompedByPlayer() {
 	}
 
 	//プレイヤーの高さとエネミーの頭の高さを比較
-	const float playerHight = m_player->GetPosition().y;
-	const float enemyHedHight = m_position.y + (m_charConScl.y * 2);
+	const float playerHight = m_player->SetTRSIns().GetPosition().y;
+	const float enemyHedHight = m_transform.position.y + (m_charConScl.y * 2);
 
 	if (playerHight <= enemyHedHight) {
 		return false;
@@ -627,12 +619,12 @@ bool Enemy::IsStompedByPlayer() {
 
 
 void Enemy::DrawVectorToMovePos() {
-	Vector3 toMoveVec = m_toMovePos - m_position;
+	Vector3 toMoveVec = m_toMovePos - m_transform.position;
 
 	toMoveVec.Normalize();
 	toMoveVec *= 100.0f;
-	Vector3 origin = m_position;
-	origin.y = m_position.y + 50.0f;
+	Vector3 origin = m_transform.position;
+	origin.y = m_transform.position.y + 50.0f;
 
 	g_k2Engine->DrawVector(toMoveVec, origin);
 }
@@ -640,10 +632,10 @@ void Enemy::DrawVectorToMovePos() {
 
 void Enemy::DrawVectorFront() {
 	Vector3 front = Vector3::AxisZ;
-	m_rotation.Apply(front);
+	m_transform.rotation.Apply(front);
 	front.Normalize();
 	front *= 100.0f;
-	Vector3 origin = m_position;
-	origin.y = m_position.y + 50.0f;
+	Vector3 origin = m_transform.position;
+	origin.y = m_transform.position.y + 50.0f;
 	g_k2Engine->DrawVector(front, origin);
 }

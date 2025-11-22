@@ -564,11 +564,20 @@ void Player::Update() {
 	
 	//UpdateCollisionInfo();
 	UpdateAtkCollisionInfo();
+
+
+	wchar_t debugStr[256];
+	swprintf_s(debugStr, L"Pos X: %.2f Y: %.2f Z: %.2f", m_transform.position.x, m_transform.position.y, m_transform.position.z);
+	m_debugFont.SetText(debugStr);
 }
 
 
 void Player::Render(RenderContext& rc) {
-	if (GetModelRender() && !m_isNearCamera) m_modelRender.Draw(rc);
+	if (GetModelRender() && !m_isNearCamera) {
+		m_modelRender.Draw(rc);
+	}
+
+	m_debugFont.Draw(rc);
 }
 
 
@@ -598,7 +607,7 @@ void Player::InitializeModel() {
 	}
 
 	const Vector2 charConScl = m_status->GetCharConInfo();
-	SetTRS(m_position, m_rotation, m_scale);
+	//m_transform.SetTransform(m_transform.position, m_transform.rotation, m_transform.scale);
 
 	//必要な情報をローカル変数へ代入
 	const char* unityFilePath = PlayerStatus::unity_file_path;
@@ -607,16 +616,17 @@ void Player::InitializeModel() {
 	//モデルレンダーを初期化
 	m_modelRender.Init(unityFilePath , m_animationClips.data(), animClipNum, enModelUpAxisY);
 	//キャラクターコントローラーを初期化
-	m_characterController.Init(charConScl.x, charConScl.y, m_position);
+	m_characterController.Init(charConScl.x, charConScl.y, m_transform.position);
+	//m_characterController.SetPosition(m_transform.position);
 	//プレイヤーの
-	//UpdateTRSInfo();
+	UpdateTRSInfo();
 }
 
 
 void Player::InitializeCollisionObject() {	
 	m_atkCollision = new CollisionObject;
 	//攻撃用のボックスコリジョンを作成
-	m_atkCollision->CreateBox(m_position, m_rotation, { 20.0f, 5.0f, 15.0f });
+	m_atkCollision->CreateBox(m_transform.position, m_transform.rotation, { 20.0f, 5.0f, 15.0f });
 	m_atkCollision->SetIsEnable(false);
 	UpdateAtkCollisionInfo();
 }

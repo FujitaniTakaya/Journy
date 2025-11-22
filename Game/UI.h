@@ -1,5 +1,5 @@
 #pragma once
-
+#include "Actor.h"
 enum EnTimer {
 	enTimer_OneSecond,
 	enTimer_TenSecond,
@@ -129,7 +129,7 @@ struct Score {
 
 class Player;
 
-class UI : public IGameObject{
+class UI : public Actor{
 private:
 	std::array<Life, nsUI::Life::MAX> m_life;
 	std::array<Timer, enTimer_Num> m_timer;
@@ -151,7 +151,7 @@ public:
 		,m_nowScore(0)
 	{}
 
-	~UI()noexcept {}
+	~UI()override {}
 
 
 	bool Start()override;

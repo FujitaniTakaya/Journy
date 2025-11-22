@@ -84,7 +84,7 @@ private:
 	static constexpr const char* animation_file_path = "Assets/animData/";						//!	ファイルの場所
 	static constexpr const char* animation_file_extension = ".tka";								//!	拡張子
 
-	static constexpr float can_next_jump_time = 0.25f;					//!	次の段のジャンプに切り替えれるまでの猶予時間	
+	static constexpr float can_next_jump_time = 0.15f;					//!	次の段のジャンプに切り替えれるまでの猶予時間	
 	static constexpr float can_stomp_jump_time = 0.1f;
 
 
@@ -212,6 +212,9 @@ public:
 public:
 	const int& GetLife() const { return m_life; }
 
+	void HealLife(const int heal) {
+		m_life = std::min<int>(m_life + heal, m_maxLife);
+	}
 
 
 	/**

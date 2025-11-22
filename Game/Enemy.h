@@ -236,9 +236,9 @@ protected:
 public:
 	Enemy() {}
 	virtual ~Enemy(){}
-	virtual bool Start()override = 0;
-	virtual void Update() override = 0;
-	virtual void Render(RenderContext& rc)override = 0;
+	virtual bool Start()override { return true; }
+	virtual void Update() override {}
+	virtual void Render(RenderContext& rc)override {}
 
 	/**	それぞれのスタート処理で呼び出す関数*/
 protected:
@@ -298,7 +298,7 @@ protected:
 	/** フラグゲッター・セッター*/
 private:
 	inline bool IsBeingToMovePos()const {
-		Vector3 dif = m_toMovePos - m_position;
+		Vector3 dif = m_toMovePos - m_transform.position;
 		if (dif.Length() >= m_status.GetWalkSpeed(m_enemyType) * 1.2) {
 			return false;
 		}

@@ -11,31 +11,33 @@ bool Game::Start()
 	m_stageLevelRender.Init("Assets/stage/firstStage/stage.tkl", [&](LevelObjectData& objData) {
 		if (objData.EqualObjectName(L"unityChan")) {
 			m_player = NewGO<Player>(0, "player");
-			m_player->SetTRS(objData.position,objData.rotation,objData.scale);
+			m_player->SetTRSIns().SetTransform(objData.position, objData.rotation, objData.scale);
+			m_player->GetCharacterController()->SetPosition(objData.position);
 			return true;
 		}
 		if (objData.EqualObjectName(L"firstStageGround")) {
 			m_firstStage = NewGO<First>(0, "firstStage");
-			m_firstStage->SetTRS(objData.position, objData.rotation, objData.scale);
+			m_firstStage->SetTRSIns().SetTransform(objData.position, objData.rotation, objData.scale);
 			return true;
 		}
 		if (objData.EqualObjectName(L"goalPole")) {
 			m_goalPole = NewGO<GoalPole>(0, "goalPole");
-			m_goalPole->SetTRS(objData.position, objData.rotation, objData.scale);
+			m_goalPole->SetTRSIns().SetTransform(objData.position, objData.rotation, objData.scale);
 			return true;
 		}
 		if (objData.EqualObjectName(L"normalEnemy")) {
 			m_firstStageEnemyCount;
 			auto enemy = m_firstStageEnemies;
 			enemy[m_firstStageEnemyCount] = NewGO<Normal>(0, "enemy");
-			enemy[m_firstStageEnemyCount]->SetFirstPosition(objData.position);
-			enemy[m_firstStageEnemyCount]->SetTRS(objData.position, objData.rotation, objData.scale);
+			enemy[m_firstStageEnemyCount]->SetTRSIns().SetTransform(objData.position, objData.rotation, objData.scale);
 			m_firstStageEnemyCount++;
 			return true;
 		}
 
 	});
 	
+	m_player->SetTRSIns().GetPosition();
+
 	m_ui = NewGO<UI>(1, "ui");
 	m_gameCamera = NewGO<GameCamera>(0, "gameCamera");
 	DeleteGO(m_skyCube);
