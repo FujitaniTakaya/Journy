@@ -21,6 +21,7 @@
     <ClCompile Include="UI.cpp" />
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="Transform.cpp" />
+    <ClCompile Include="SpriteManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -38,5 +39,6 @@
     <ClInclude Include="UI.h" />
     <ClInclude Include="Actor.h" />
     <ClInclude Include="Transform.h" />
+    <ClInclude Include="SpriteManager.h" />
   </ItemGroup>
 </Project>

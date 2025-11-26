@@ -233,6 +233,7 @@
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="SpriteManager.cpp" />
     <ClCompile Include="Stage.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -251,6 +252,7 @@
     <ClInclude Include="GameCamera.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="SpriteManager.h" />
     <ClInclude Include="Stage.h" />
     <ClInclude Include="Status.h" />
     <ClInclude Include="stdafx.h" />
