@@ -17,6 +17,9 @@ public:
 	bool Start()override;
 	void Render(RenderContext& rc)override;
 
+
+	void StartGame();
+
 private:
 	Stage* m_firstStage = nullptr;
 	Stage* m_goalPole = nullptr;

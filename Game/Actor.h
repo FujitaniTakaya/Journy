@@ -1,5 +1,6 @@
 #pragma once
 #include "Transform.h"
+#include "ActorStatus.h"
 
 class Actor : public IGameObject {
 protected:
@@ -7,10 +8,10 @@ protected:
 	ModelRender m_modelRender;
 	SpriteRender m_spriteRender;
 
-
+	//ActorStatus* m_status = nullptr;
 public:
-	Actor() {};
-	virtual ~Actor(){}
+	Actor();
+	virtual ~Actor();
 
 
 public:
@@ -20,7 +21,7 @@ public:
 
 
 public:
-	inline Transform& SetTRSIns() { return m_transform; }
+	inline Transform& GetTRSIns() { return m_transform; }
 
 	inline ModelRender* GetModelRender() { return &m_modelRender; }
 

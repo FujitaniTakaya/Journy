@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Status.h"
+//#include "Status.h"
 #include "Player.h"
 #include <thread>
 
@@ -546,8 +546,82 @@
 //}
 
 
+namespace nsPlayer {
+	Vector2 CHAR_CON_SCL = { 15.0f, 65.0f };
+
+	const Vector3 ATK_COLLISION_SCL = { 40.0f, 10.0f, 30.0f };
+
+	ModelInfo MODEL_INFO = {
+		"Assets/modelData/player/unityChan.tkm"
+	};
+
+	AnimInfo ANIM_INFO[EnPlayerState::enPlayerState_Num] = {
+		{ "Assets/animData/player/idle.tka", 1.0f, true },
+		{ "Assets/animData/player/walk.tka", 1.0f, true },
+		{ "Assets/animData/player/run.tka", 1.0f, true },
+		{ "Assets/animData/player/jump.tka", 1.0f, false }
+	};	
+}
+
+
+Player::Player() {
+}
+
+Player::~Player() {
+}
+
+
+void Player::LoadAnimationClips() {
+	//m_animationClips.resize(EnPlayerState::enPlayerState_Num);
+	for (int i = 0; i < EnPlayerState::enPlayerState_Num; i++) {
+		AnimationClip* anim = new AnimationClip;
+
+		std::string filePath = nsPlayer::ANIM_INFO[i].GetAnimFullPath();
+		const bool isLoop = nsPlayer::ANIM_INFO[i].IsLoop();
+
+		anim->Load(filePath.c_str());
+		anim->SetLoopFlag(isLoop);
+		
+		m_animationClips.push_back(anim);
+	}
+
+}
+
+
+void Player::SetUpModel() {
+	ModelInfo& modelInfo = nsPlayer::MODEL_INFO;	
+	const Vector2 charConScl = nsPlayer::CHAR_CON_SCL;
+	m_modelRender.Init(modelInfo.GetModelFullPath().c_str(), *m_animationClips.data(), EnPlayerState::enPlayerState_Num, enModelUpAxisY);
+	m_firstPos = m_transform.position;
+	m_modelRender.Update();
+	
+	m_characterController.Init(charConScl.x, charConScl.y, m_transform.position);
+}
+
+
+void Player::InitializeCollisionObject() {
+	m_atkCollision = new CollisionObject;
+	//攻撃用のボックスコリジョンを作成
+	m_atkCollision->CreateBox(m_transform.position, m_transform.rotation, { 20.0f, 5.0f, 15.0f });
+	m_atkCollision->SetIsEnable(false);
+	UpdateAtkCollisionInfo();
+}
+
+
+void Player::InitializeStatusInfo() {
+	//ステータス変数の初期化
+	m_state = EnPlayerState::enPlayerState_Num;
+	m_moveState = EnMoveState::enMoveState_Walk;
+	m_jumpPowerState = EnJumpPower::enJumpPower_First;
+}
+
+
 bool Player::Start() {
-	InitializeCharacter();
+	m_playerStatus = new PlayerStatus;
+	LoadAnimationClips();
+	SetUpModel();
+	InitializeCollisionObject();
+	InitializeStatusInfo();
 	return true;
 }
 
@@ -561,14 +635,6 @@ void Player::Update() {
 
 	//更新
 	UpdateTRSInfo();
-	
-	//UpdateCollisionInfo();
-	UpdateAtkCollisionInfo();
-
-
-	wchar_t debugStr[256];
-	swprintf_s(debugStr, L"Pos X: %.2f Y: %.2f Z: %.2f", m_transform.position.x, m_transform.position.y, m_transform.position.z);
-	m_debugFont.SetText(debugStr);
 }
 
 
@@ -576,67 +642,6 @@ void Player::Render(RenderContext& rc) {
 	if (GetModelRender() && !m_isNearCamera) {
 		m_modelRender.Draw(rc);
 	}
-
-	m_debugFont.Draw(rc);
-}
-
-
-void Player::InitializeCharacter() {
-	InitializeModel();
-	InitializeCollisionObject();
-	InitializeStatusInfo();
-}
-
-void Player::InitializeModel() {
-	for (auto& anim : m_animationClips) {
-		static uint8_t i = 0;
-
-		//ファイルパスの作成
-		const std::string filePath = m_status->GetAnimInfo(static_cast<EnCharState>(i)).GetAnimFullPath();
-
-		//アニメーションの読み込み
-		anim.Load(filePath.c_str());
-		//ループ設定
-		if (i == EnCharState::enCharState_Jump) {
-			anim.SetLoopFlag(false);
-			i++;
-			continue;
-		}
-		anim.SetLoopFlag(true);
-		i++;
-	}
-
-	const Vector2 charConScl = m_status->GetCharConInfo();
-	//m_transform.SetTransform(m_transform.position, m_transform.rotation, m_transform.scale);
-
-	//必要な情報をローカル変数へ代入
-	const char* unityFilePath = PlayerStatus::unity_file_path;
-	uint8_t animClipNum = EnCharState::enCharState_Num;
-	
-	//モデルレンダーを初期化
-	m_modelRender.Init(unityFilePath , m_animationClips.data(), animClipNum, enModelUpAxisY);
-	//キャラクターコントローラーを初期化
-	m_characterController.Init(charConScl.x, charConScl.y, m_transform.position);
-	//m_characterController.SetPosition(m_transform.position);
-	//プレイヤーの
-	UpdateTRSInfo();
-}
-
-
-void Player::InitializeCollisionObject() {	
-	m_atkCollision = new CollisionObject;
-	//攻撃用のボックスコリジョンを作成
-	m_atkCollision->CreateBox(m_transform.position, m_transform.rotation, { 20.0f, 5.0f, 15.0f });
-	m_atkCollision->SetIsEnable(false);
-	UpdateAtkCollisionInfo();
-}
-
-
-void Player::InitializeStatusInfo() {
-	//ステータス変数の初期化
-	m_state = EnCharState::enCharState_Idle;
-	m_moveState = EnMoveState::enMoveState_Walk;
-	m_jumpPowerState = EnJumpPower::enJumpPower_First;
 }
 
 
@@ -659,7 +664,7 @@ void Player::Move() {
 	right.y = 0.0f;
 	
 	//移動ステートに応じたスピードを取得
-	const float speed = m_status->GetMoveSpeed(m_moveState);
+	const float speed = m_playerStatus->GetMoveSpeed(m_moveState);
 
 	right *= stickL.x *= speed;
 	forward *= stickL.y *= speed;
@@ -678,6 +683,8 @@ void Player::Jump() {
 	if (IsJump()) {
 		m_moveSpeed.x -= 0.00000001f;
 		m_moveSpeed.z -= 0.00000001f;
+
+		UpdateAtkCollisionInfo();
 	}
 
 
@@ -689,8 +696,10 @@ void Player::Jump() {
 	}
 	
 	if (m_atkCollision) {
-	}//ジャンプ状態に応じて攻撃コリジョンの有効無効を切り替え
-	m_atkCollision->SetIsEnable(IsJump());	
+		//ジャンプ状態に応じて攻撃コリジョンの有効無効を切り替え
+		m_atkCollision->SetIsEnable(IsJump());
+	}
+	
 }
 
 
@@ -699,15 +708,15 @@ void Player::TripleJump() {
 	//ジャンプしていれば
 	if (IsJump()) {
 		//着地時間をリセット
-		m_status->ResetStandingTime();
+		m_playerStatus->ResetStandingTime();
 
 		//重力を発生させる
-		AddGravity();
+		m_moveSpeed.y += m_playerStatus->GetGravity();
 		return;
 	}
 
 	//滞空時間をリセット
-	m_status->ResetFlyingTime();
+	m_playerStatus->ResetFlyingTime();
 	
 	//Y方向の移動速度を0にする
 	m_moveSpeed.y = 0.0f;
@@ -718,14 +727,14 @@ void Player::TripleJump() {
 
 
 		//次の段階のジャンプに切り替え可能か
-		if (!m_status->CanNextJump()) {
+		if (!m_playerStatus->CanNextJump()) {
 
 
 			//ジャンプ力状態を最初に戻す
 			m_jumpPowerState = EnJumpPower::enJumpPower_First;
 
 			//着地時間をリセット
-			m_status->ResetStandingTime();
+			m_playerStatus->ResetStandingTime();
 		}
 	}
 
@@ -738,7 +747,7 @@ void Player::TripleJump() {
 	m_moveSpeed.y = 0.0f;
 
 	//現在のジャンプ力状態をもとにジャンプ力を設定
-	const float jumpPower = m_status->GetJumpInfo(m_jumpPowerState).GetJumpPower();
+	const float jumpPower = m_playerStatus->GetJumpInfo(m_jumpPowerState).GetJumpPower();
 	m_moveSpeed.y = jumpPower;
 
 
@@ -754,17 +763,16 @@ void Player::StompJump() {
 
 	float jumpPower = 0.0f;
 	
-	
-	if (!m_status->CanStompJump()) {
+	if (!m_playerStatus->CanStompJump()) {
 		//敵を倒したフラグをリセット
 		m_isKillEnemy = false;
 
 		//滞空時間をリセット
-		m_status->ResetFlyingTime();
+		m_playerStatus->ResetFlyingTime();
 
 		//落下速度を0にする
 		m_moveSpeed.y = 0.0f;
-		jumpPower = m_status->GetJumpInfo(EnJumpPower::enJumpPower_First).GetJumpPower();
+		jumpPower = m_playerStatus->GetJumpInfo(EnJumpPower::enJumpPower_First).GetJumpPower();
 		m_moveSpeed.y += jumpPower;
 		return;
 	}
@@ -774,10 +782,10 @@ void Player::StompJump() {
 
 	m_isKillEnemy = false;
 	//滞空時間をリセット
-	m_status->ResetFlyingTime();
+	m_playerStatus->ResetFlyingTime();
 	//落下速度を0にする
 	m_moveSpeed.y = 0.0f;
-	jumpPower = m_status->GetJumpInfo(m_jumpPowerState).GetJumpPower();
+	jumpPower = m_playerStatus->GetJumpInfo(m_jumpPowerState).GetJumpPower();
 	m_moveSpeed.y += jumpPower;
 	AdjustNextJumpState();	
 }
@@ -786,24 +794,24 @@ void Player::StompJump() {
 void Player::ManageStateAndAnimation() {
 	float animationSpeed = 0.0f;
 
-	m_state = EnCharState::enCharState_Idle;
+	m_state = EnPlayerState::enPlayerState_Idle;
 	//移動中であれば
 	if (IsMove()) {
-		m_state = EnCharState::enCharState_Walk;
+		m_state = EnPlayerState::enPlayerState_Walk;
 		m_moveState = EnMoveState::enMoveState_Walk;
 
 	}
 	//走っていれば
 	if (IsRun()) {
-		m_state = EnCharState::enCharState_Run;
+		m_state = EnPlayerState::enPlayerState_Run;
 		m_moveState = EnMoveState::enMoveState_Run;
 	}
 
-	animationSpeed = m_status->GetAnimInfo(m_state).GetPlayAnimSpeed();
+	animationSpeed = nsPlayer::ANIM_INFO[m_state].GetPlayAnimSpeed();
 
 	//地面についていなければ
 	if (IsJump()) {
-		m_state = EnCharState::enCharState_Jump;
+		m_state = EnPlayerState::enPlayerState_Jump;
 		//AdjustNextJumpState(m_jumpPowerState);
 		
 
@@ -812,10 +820,17 @@ void Player::ManageStateAndAnimation() {
 		EnJumpPower state = static_cast<EnJumpPower>(nextState % enJumpPower_Num);
 
 		//ジャンプ力状態に応じてアニメーション速度を変更
-		animationSpeed *= m_status->GetJumpInfo(state).GetJumpAnimSpeed();
+		animationSpeed *= m_playerStatus->GetJumpInfo(m_jumpPowerState).GetJumpAnimSpeed();
 	}
 
 	//アニメーション再生
 	m_modelRender.SetAnimationSpeed(animationSpeed);
 	m_modelRender.PlayAnimation(m_state);
+}
+
+
+void Player::UpdateAtkCollisionInfo() {
+	m_atkCollision->SetPosition(m_transform.position);
+	m_atkCollision->SetRotation(m_transform.rotation);
+	m_atkCollision->Update();
 }

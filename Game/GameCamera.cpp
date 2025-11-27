@@ -29,7 +29,7 @@ GameCamera::~GameCamera() {
 
 void GameCamera::Update() {
 	if (!m_player) return;
-	Vector3 target = m_player->SetTRSIns().GetPosition();
+	Vector3 target = m_player->GetTRSIns().GetPosition();
 	target.y += 80.0f;
 	target += g_camera3D->GetForward() * 40.0f;
 
@@ -74,7 +74,7 @@ void GameCamera::Update() {
 void GameCamera::IsNearPlayer()  {
 	if (!m_player) return;
 	Vector3 cameraPos = g_camera3D->GetPosition();
-	Vector3 playerPos = m_player->SetTRSIns().GetPosition();
+	Vector3 playerPos = m_player->GetTRSIns().GetPosition();
 	//プレイヤーからカメラのベクトルを取り、距離を計算
 	float dis = (cameraPos - playerPos).Length();
 	//距離が100未満であれば近い

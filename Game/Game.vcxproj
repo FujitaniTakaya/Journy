@@ -226,12 +226,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Actor.cpp" />
+    <ClCompile Include="ActorStatus.cpp" />
     <ClCompile Include="Character.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameCamera.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="NormalEnemy.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="SpriteManager.cpp" />
     <ClCompile Include="Stage.cpp" />
@@ -246,17 +248,20 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor.h" />
+    <ClInclude Include="ActorStatus.h" />
     <ClInclude Include="Character.h" />
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameCamera.h" />
     <ClInclude Include="Item.h" />
+    <ClInclude Include="NormalEnemy.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="SpriteManager.h" />
     <ClInclude Include="Stage.h" />
     <ClInclude Include="Status.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="system\system.h" />
+    <ClInclude Include="Text.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="UI.h" />
   </ItemGroup>

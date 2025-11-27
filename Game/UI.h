@@ -136,7 +136,7 @@ private:
 	std::array<Score, enMaxScoreDigit> m_score;
 	float m_gameTimer = 0.0f;
 	float m_nowTime = 0.0f;
-	int m_nowScore = 0.0f;
+	int m_nowScore = 0;
 
 
 private:
@@ -173,7 +173,7 @@ public:
 	void UpdateLife();
 
 
-	void AddScore(float score);
+	void AddScore(int score);
 
 
 private:

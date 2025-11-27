@@ -1,44 +1,40 @@
 #pragma once
 #include <stdint.h>
 #include "Actor.h"
-#include "Status.h"
 #include "memory.h"
 
 
 class Character : public Actor
 {
-private:
-	std::unique_ptr<GameStatus> m_status = nullptr;
-
-
 protected:
 	Vector3 m_firstPos = Vector3::Zero;
-	Vector3 m_moveSpeed = Vector3::Zero;	
-	Vector2 m_charConScl = Vector2::Zero;
-	//Transform m_transform = Transform::Initialize;
-	CharacterController m_characterController;
-	//std::vector<AnimationClip> m_animationClips;
-
 	
+	//TODO:後で消す
+	Vector3 m_moveSpeed = Vector3::Zero;
+	
+	Vector2 m_charConScl = Vector2::Zero;
+	CharacterController m_characterController;
+	std::vector<AnimationClip*> m_animationClips;
 
-public:
-	Character() : m_status(std::make_unique<GameStatus>()) {}
-	virtual ~Character(){}
+	Character* m_status = nullptr;
+
+protected:
+	Character();
+	virtual ~Character()override;
 
 	virtual bool Start() override;
 	virtual void Update()override;
 	virtual void Render(RenderContext& rc)override;
 	
 
-
-
 public:
-	// 初期化
-	virtual void InitializeCharacter()= 0;
+	/** アニメーションの初期化 */
+	virtual void LoadAnimationClips() = 0;
+	/** モデルの初期化 */
+	virtual void SetUpModel() = 0;
 
-
-	inline const Vector3& GetMoveSpeed() const { return m_moveSpeed; }
-	inline void SetMoveSpeed(const Vector3& speed) { m_moveSpeed = speed; }
+	//inline const Vector3& GetMoveSpeed() const { return m_moveSpeed; }
+	//inline void SetMoveSpeed(const Vector3& speed) { m_moveSpeed = speed; }
 
 	/** 当たり判定系 */
 public:
@@ -80,16 +76,6 @@ protected:
 		m_modelRender.Update();
 	}
 
-	/**	ステータス取得*/
-private:
-	inline GameStatus& GetGameStatus() {return *m_status;}
-
-	/**	重力処理	*/
-protected:
-	inline void AddGravity() {
-		//重力加算
-		m_moveSpeed.y += m_status->GetGravity();
-	}
 
 
 	/**	移動方向に回転	*/
