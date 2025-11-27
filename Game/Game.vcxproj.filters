@@ -22,6 +22,8 @@
     <ClCompile Include="Actor.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="SpriteManager.cpp" />
+    <ClCompile Include="NormalEnemy.cpp" />
+    <ClCompile Include="ActorStatus.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -40,5 +42,8 @@
     <ClInclude Include="Actor.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="SpriteManager.h" />
+    <ClInclude Include="NormalEnemy.h" />
+    <ClInclude Include="ActorStatus.h" />
+    <ClInclude Include="Text.h" />
   </ItemGroup>
 </Project>

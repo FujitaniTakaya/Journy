@@ -133,7 +133,7 @@ void UI::MeasureNowTime() {
 }
 
 
-void UI::AddScore(float score) {
+void UI::AddScore(int score) {
 	//ƒXƒRƒA‚ð‰ÁŽZ
 	m_nowScore += score;
 	
