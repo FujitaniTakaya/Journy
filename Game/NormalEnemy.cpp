@@ -3,18 +3,10 @@
 #include "Player.h"
 
 
-namespace nsNormalEnemy {
+namespace  {
 	const Vector2 CHAR_CON_SCL = { 15.0f, 60.0f };
-
-	const ModelInfo MODEL_INFO = {
-		"Assets/modelData/enemy/normalEnemy/normalEnemy.tkm"
-	};
-
-
+	
 	const int ANIM_NUM = 1;
-	const AnimInfo ANIM_INFO = {
-		"Assets/modelData/enemy/normalEnemy/walk.tka",1.3f,true
-	};
 }
 
 
@@ -27,30 +19,25 @@ NormalEnemy::~NormalEnemy() {
 
 
 void NormalEnemy::LoadAnimationClips() {
-	//ƒAƒjƒ[ƒVƒ‡ƒ“‚Ì‰Šú‰»
-	m_animationClips.reserve(nsNormalEnemy::ANIM_NUM);
-	for (auto& clip : m_animationClips) {
-		clip =  new AnimationClip;
-		const AnimInfo& anim = nsNormalEnemy::ANIM_INFO;
-		clip->Load(anim.GetAnimFullPath().c_str());
-		clip->SetLoopFlag(anim.IsLoop());
-	}
+	//m_animationClips.resize(ANIM_NUM);
+	m_animationClips[0].Load("Assets/modelData/enemy/normalEnemy/walk.tka");
+	m_animationClips[0].SetLoopFlag(true);
 }
 
 
 void NormalEnemy::SetUpModel() {
-	const ModelInfo& modelInfo = nsNormalEnemy::MODEL_INFO;
-	m_modelRender.Init(modelInfo.GetModelFullPath().c_str(), m_animationClips.front(), nsNormalEnemy::ANIM_NUM, enModelUpAxisY);
+
+	m_modelRender.Init("Assets/modelData/enemy/normalEnemy/normalEnemy.tkm",
+	&m_animationClips[EnPlayerState::enPlayerState_Num],
+	ANIM_NUM, enModelUpAxisY);
 	m_firstPos = m_transform.position;
-	Vector2 charConScl = nsNormalEnemy::CHAR_CON_SCL;
-	m_characterController.Init(charConScl.x, charConScl.y, m_transform.position);
+	m_characterController.Init(CHAR_CON_SCL.x, CHAR_CON_SCL.y, m_transform.position);
 }
 
 
 bool NormalEnemy::Start() {
-	m_normalEnemyStatus = new NormalEnemyStatus;
-	//m_status = m_normalEnemyStatus;
-	//InitializeCharacter();
+	LoadAnimationClips();
+	SetUpModel();
 	DecideToMovePos();
 	
 	if (!m_player) {
@@ -84,7 +71,7 @@ void NormalEnemy::Render(RenderContext& rc) {
 
 void NormalEnemy::Move() {
 	if (IsFoundPlayer()) {
-		ChasePlayer(m_normalEnemyStatus);
+		ChasePlayer(&m_normalEnemyStatus);
 		return;
 	}
 	RandomWalkAround();
@@ -135,24 +122,24 @@ void NormalEnemy::RandomWalkAround() {
 	float dot = Dot(front, dif);
 
 	//‚Ù‚Ú“¯‚¶•ûŒü‚ðŒü‚¢‚Ä‚¢‚ê‚Î‰ñ“]‚µ‚È‚¢
-	if (dot < m_normalEnemyStatus->GetFrontAngle()) {
+	if (dot < m_normalEnemyStatus.GetFrontAngle()) {
 		//‰E‰ñ‚è‚©¶‰ñ‚è‚©”»’è‚·‚é
 		Vector3 cross = Cross(front, dif);
 		cross.Normalize();
 		//0.0f‚æ‚è¬‚³‚¯‚ê‚Î‰E‰ñ“]
 		if (cross.y < 0.0f) {
 			//‰E‰ñ“]
-			m_transform.rotation.AddRotationDegY(-1 * m_normalEnemyStatus->GetRotateSpeed());
+			m_transform.rotation.AddRotationDegY(-1 * m_normalEnemyStatus.GetRotateSpeed());
 		}
 		//0.0f‚æ‚è‘å‚«‚¯‚ê‚Î¶‰ñ“]
 		else if (cross.y > 0.0f) {
 			//¶‰ñ“]
-			m_transform.rotation.AddRotationDegY(m_normalEnemyStatus->GetRotateSpeed());
+			m_transform.rotation.AddRotationDegY(m_normalEnemyStatus.GetRotateSpeed());
 		}
 		return;
 	}
 
-	const Vector3 speed = dif * m_normalEnemyStatus->GetMoveSpeed(EnMoveState::enMoveState_Walk);
+	const Vector3 speed = dif * m_normalEnemyStatus.GetMoveSpeed(EnMoveState::enMoveState_Walk);
 	m_moveSpeed += speed;
 }
 
@@ -168,7 +155,7 @@ void NormalEnemy::DecideToMovePos() {
 
 bool NormalEnemy::IsBeingToMovePos()const {
 	Vector3 dif = m_toMovePos - m_transform.position;
-	float speed = m_normalEnemyStatus->GetMoveSpeed(EnMoveState::enMoveState_Walk);
+	float speed = m_normalEnemyStatus.GetMoveSpeed(EnMoveState::enMoveState_Walk);
 	if (dif.Length() >= speed * 1.2) return false;
 	return true;
 }

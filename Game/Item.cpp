@@ -104,5 +104,5 @@ void PurpleCrystal::Render(RenderContext& rc) {
 
 
 void PurpleCrystal::Effect() {
-	m_player->GetStatus()->HealLife(HEAL_AMOUNT);
+	m_player->GetStatus().HealLife(HEAL_AMOUNT);
 }

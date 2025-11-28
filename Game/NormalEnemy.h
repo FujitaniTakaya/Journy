@@ -4,7 +4,7 @@
 
 class NormalEnemy :  public Enemy{
 private:
-	NormalEnemyStatus* m_normalEnemyStatus = nullptr;
+	NormalEnemyStatus m_normalEnemyStatus;
 
 
 public:

@@ -123,6 +123,9 @@ private:
 	bool m_isLoop;
 
 public:
+	AnimInfo();
+	
+	
 	AnimInfo(
 		const std::string& animFilePath,
 		const float playAnimSpeed,
@@ -134,18 +137,43 @@ public:
 	{
 	}
 
-	/**	アニメーションファイルのフルパスを取得*/
+
+public:
+	/**	アニメーションファイルのフルパスのゲッター*/
 	const std::string GetAnimFullPath()const {
 		return m_animFilePath;
 	}
-	/**	アニメーション再生速度取得*/
+	
+	
+	/**	アニメーション再生速度のゲッター*/
 	const float& GetPlayAnimSpeed()const {
 		return m_playAnimSpeed;
 	}
-	/**	ループするかどうか取得*/
+
+
+	/**	ループ状態ののゲッター*/
 	const bool& IsLoop()const {
 		return m_isLoop;
 	}	
+
+
+public:
+	/**	アニメーションファイルパスのセッター*/
+	void SetAnimFilePath(const std::string& path) {
+		m_animFilePath = path;
+	}
+
+
+	/**	アニメーション再生速度のセッター*/
+	void SetPlayAnimSpeed(const float speed) {
+		m_playAnimSpeed = speed;
+	}
+
+
+	/**	ループ状態のセッター*/
+	void SetIsLoop(const bool isLoop) {
+		m_isLoop = isLoop;
+	}
 };
 
 

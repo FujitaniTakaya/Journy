@@ -9,3 +9,13 @@ Actor::Actor()
 Actor::~Actor()
 {
 }
+
+
+void Actor::SetUpModel()
+{
+}
+
+
+void Actor::SetUpSprite()
+{
+}

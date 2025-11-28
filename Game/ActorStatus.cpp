@@ -113,3 +113,7 @@ NormalEnemyStatus::NormalEnemyStatus() :
 NormalEnemyStatus::~NormalEnemyStatus()
 { 
 }
+
+AnimInfo::AnimInfo()
+{
+}

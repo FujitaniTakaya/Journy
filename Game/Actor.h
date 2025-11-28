@@ -8,7 +8,11 @@ protected:
 	ModelRender m_modelRender;
 	SpriteRender m_spriteRender;
 
-	//ActorStatus* m_status = nullptr;
+
+protected:
+	virtual void SetUpModel();
+	virtual void SetUpSprite();
+
 public:
 	Actor();
 	virtual ~Actor();

@@ -1,11 +1,12 @@
 #pragma once
 #include "Character.h"
 #include "ActorStatus.h"
+#include <memory>
 
 
 
 enum EnPlayerState {
-	enPlayerState_Idle,
+	enPlayerState_Idle = 0,
 	enPlayerState_Walk,
 	enPlayerState_Run,
 	enPlayerState_Jump,
@@ -17,15 +18,16 @@ enum EnPlayerState {
 */
 class Player : public Character {
 private:
-	
 	EnPlayerState m_state = EnPlayerState::enPlayerState_Idle;
 	EnMoveState m_moveState = EnMoveState::enMoveState_Walk;
 	EnJumpPower m_jumpPowerState = EnJumpPower::enJumpPower_First;
 	CollisionObject* m_atkCollision = nullptr;
-	PlayerStatus* m_playerStatus = nullptr;
+	PlayerStatus m_playerStatus;
 	bool m_isKillEnemy = false;
 	bool m_isNearCamera = false;
+	float m_animationSpeed[EnPlayerState::enPlayerState_Num] = { 1.0f, 1.3f, 1.6f, 1.0f };
 
+	//AnimationClip m_animationClips[EnPlayerState::enPlayerState_Num];
 
 public:
 	Player();
@@ -43,7 +45,7 @@ public:
 
 	inline void SetIsNearCamera(const bool isNear) { m_isNearCamera = isNear; }
 
-	inline PlayerStatus* GetStatus()const { return m_playerStatus; }
+	inline PlayerStatus& GetStatus() { return m_playerStatus; }
 
 
 

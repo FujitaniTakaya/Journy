@@ -14,9 +14,10 @@ protected:
 	
 	Vector2 m_charConScl = Vector2::Zero;
 	CharacterController m_characterController;
-	std::vector<AnimationClip*> m_animationClips;
-
-	Character* m_status = nullptr;
+	//std::vector<AnimationClip> m_animationClips;
+	std::array<AnimationClip,4> m_animationClips;
+	//AnimationClip* m_animationClips;
+	CharacterStatus* m_status = nullptr;
 
 protected:
 	Character();
@@ -31,7 +32,7 @@ public:
 	/** アニメーションの初期化 */
 	virtual void LoadAnimationClips() = 0;
 	/** モデルの初期化 */
-	virtual void SetUpModel() = 0;
+	virtual void SetUpModel() {};
 
 	//inline const Vector3& GetMoveSpeed() const { return m_moveSpeed; }
 	//inline void SetMoveSpeed(const Vector3& speed) { m_moveSpeed = speed; }
