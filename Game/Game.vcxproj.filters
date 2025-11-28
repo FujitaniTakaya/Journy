@@ -24,6 +24,7 @@
     <ClCompile Include="SpriteManager.cpp" />
     <ClCompile Include="NormalEnemy.cpp" />
     <ClCompile Include="ActorStatus.cpp" />
+    <ClCompile Include="Button.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h" />
@@ -45,5 +46,6 @@
     <ClInclude Include="NormalEnemy.h" />
     <ClInclude Include="ActorStatus.h" />
     <ClInclude Include="Text.h" />
+    <ClInclude Include="Button.h" />
   </ItemGroup>
 </Project>

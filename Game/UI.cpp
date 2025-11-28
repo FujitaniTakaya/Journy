@@ -95,7 +95,7 @@ void UI::Update() {
 
 
 void UI::UpdateLife() {
-	int hp = m_player->GetStatus()->GetLife();
+	int hp = m_player->GetStatus().GetLife();
 	for (int i = 0; i < nsUI::Life::MAX; i++) {
 		if (i < hp) continue;
 		m_life[i].isActive = false;

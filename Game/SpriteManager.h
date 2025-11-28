@@ -1,10 +1,5 @@
 #pragma once
-
-struct SpriteSlot {
-	SpriteRender spriteRender;
-	bool isActive;
-};
-
+#include "Actor.h"
 
 enum EnSpriteType {
 	enSpriteType_Title,	
@@ -18,21 +13,32 @@ enum EnSpriteType {
 };
 
 
-class SpriteManager : public IGameObject{
+class SpriteManager : public Actor{
 private:
-	std::vector<SpriteSlot> m_spritSlots;
-
+	bool m_isActive;
 
 public:
-	void LoadSprites();
-	void SetActive(EnSpriteType type, bool isActive);
-
+	virtual void SetUpSprite()override;
 
 public:
 	SpriteManager();
-	~SpriteManager()override;
+	virtual ~SpriteManager()override;
+	virtual bool Start()override;
+	virtual void Update()override;
+	virtual void Render(RenderContext& rc)override;
+};
+
+
+
+class Title : public Actor {
+private:
+	virtual void SetUpSprite()override;
+
+
+public:
+	Title();
+	~Title() override;
 	bool Start()override;
 	void Update()override;
 	void Render(RenderContext& rc)override;
 };
-
