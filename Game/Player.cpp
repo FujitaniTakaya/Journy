@@ -10,6 +10,22 @@ namespace {
 
 	const Vector3 ATK_COLLISION_SCL = { 40.0f, 10.0f, 30.0f };
 
+	const std::string CHAR_TYPE = "player/";
+
+	const std::string ANIM_FILE_NAME[EnPlayerState::enPlayerState_Num] = {
+		"idle", "walk", "run", "jump"
+	};	
+
+	constexpr bool ANIM_LOOP_FLAG[EnPlayerState::enPlayerState_Num] = {
+		true, true, true, false
+	};
+
+	constexpr float ANIM_SPEED[EnPlayerState::enPlayerState_Num] = {
+		1.0f, 1.3f, 1.6f, 1.0f
+	};
+
+	std::string MODEL_FILE_NAME = "unityChan";
+	
 }
 
 
@@ -26,43 +42,77 @@ void Player::LoadAnimationClips() {
 	//m_animationClips.clear();
 	//m_animationClips.resize(EnPlayerState::enPlayerState_Num);
 
-	{
-		//m_animationClips[EnPlayerState::enPlayerState_Idle] = new AnimationClip;
-		m_animationClips[EnPlayerState::enPlayerState_Idle].Load("Assets/animData/player/idle.tka");
-		m_animationClips[EnPlayerState::enPlayerState_Idle].SetLoopFlag(true);
+	//{
+	//	//m_animationClips[EnPlayerState::enPlayerState_Idle] = new AnimationClip;
+	//	m_animationClips[EnPlayerState::enPlayerState_Idle].Load("Assets/animData/player/idle.tka");
+	//	m_animationClips[EnPlayerState::enPlayerState_Idle].SetLoopFlag(true);
+	//}
+	//{
+	//	//m_animationClips[EnPlayerState::enPlayerState_Walk] = new AnimationClip;
+	//	m_animationClips[EnPlayerState::enPlayerState_Walk].Load("Assets/animData/player/walk.tka");
+	//	m_animationClips[EnPlayerState::enPlayerState_Walk].SetLoopFlag(true);
+	//}
+	//{
+	//	//m_animationClips[EnPlayerState::enPlayerState_Run] = new AnimationClip;
+	//	m_animationClips[EnPlayerState::enPlayerState_Run].Load("Assets/animData/player/run.tka");
+	//	m_animationClips[EnPlayerState::enPlayerState_Run].SetLoopFlag(true);
+	//}
+	//{
+	//	//m_animationClips[EnPlayerState::enPlayerState_Jump] = new AnimationClip;
+	//	m_animationClips[EnPlayerState::enPlayerState_Jump].Load("Assets/animData/player/jump.tka");
+	//	m_animationClips[EnPlayerState::enPlayerState_Jump].SetLoopFlag(false);
+	//}
+
+	//uint8_t animSize = static_cast<uint8_t>(EnPlayerState::enPlayerState_Num);
+
+	//m_animationClips.resize(static_cast<uint8_t>(EnPlayerState::enPlayerState_Num));
+	//for (int i = 0; i < animSize; i++) {
+	//	AnimationClip* animationClip = new AnimationClip();
+	//	auto filePath = nsAnim::GetFullPath(CHAR_TYPE, ANIM_FILE_NAME[i]).c_str();
+	//	animationClip->Load(nsAnim::GetFullPath(CHAR_TYPE, ANIM_FILE_NAME[i]).c_str());
+	//	animationClip->SetLoopFlag(ANIM_LOOP_FLAG[i]);
+	//	m_animationClips[i] = animationClip;
+	//	//delete animationClip;
+	//}
+
+
+	/*auto* animationClip1 = new AnimationClip();
+	animationClip1->Load("Assets/animData/player/idle.tka");
+	animationClip1->SetLoopFlag(true);
+	m_animationClips[0] = animationClip1;
+	auto* animationClip2 = new AnimationClip();
+	animationClip2->Load("Assets/animData/player/walk.tka");
+	animationClip2->SetLoopFlag(true);
+	m_animationClips[1] = animationClip2;
+	auto* animationClip3 = new AnimationClip();
+	animationClip3->Load("Assets/animData/player/run.tka");
+	animationClip3->SetLoopFlag(true);
+	m_animationClips[2] = animationClip3;
+	auto* animationClip4 = new AnimationClip();
+	animationClip4->Load("Assets/animData/player/jump.tka");
+	animationClip4->SetLoopFlag(false);
+	m_animationClips[3] = animationClip4;*/
+
+
+
+	for (int i = 0; i < EnPlayerState::enPlayerState_Num; ++i) {
+		m_animationClips[i].Load(nsAnim::GetFullPath(CHAR_TYPE, ANIM_FILE_NAME[i]).c_str());
+		m_animationClips[i].SetLoopFlag(ANIM_LOOP_FLAG[i]);
 	}
-	{
-		//m_animationClips[EnPlayerState::enPlayerState_Walk] = new AnimationClip;
-		m_animationClips[EnPlayerState::enPlayerState_Walk].Load("Assets/animData/player/walk.tka");
-		m_animationClips[EnPlayerState::enPlayerState_Walk].SetLoopFlag(true);
-	}
-	{
-		//m_animationClips[EnPlayerState::enPlayerState_Run] = new AnimationClip;
-		m_animationClips[EnPlayerState::enPlayerState_Run].Load("Assets/animData/player/run.tka");
-		m_animationClips[EnPlayerState::enPlayerState_Run].SetLoopFlag(true);
-	}
-	{
-		//m_animationClips[EnPlayerState::enPlayerState_Jump] = new AnimationClip;
-		m_animationClips[EnPlayerState::enPlayerState_Jump].Load("Assets/animData/player/jump.tka");
-		m_animationClips[EnPlayerState::enPlayerState_Jump].SetLoopFlag(false);
-	}
+
 }
 
 
 void Player::SetUpModel() {
-	const Vector2 charConScl = CHAR_CON_SCL;
-
-	AnimationClip* a = m_animationClips.data();
-
 	m_modelRender.Init(
-		"Assets/modelData/player/unityChan.tkm",
-		m_animationClips.data(),
-		EnPlayerState::enPlayerState_Num,  // クリップ数
+		nsModel::GetFullPath(CHAR_TYPE, MODEL_FILE_NAME).c_str(),
+		m_animationClips,
+		EnPlayerState::enPlayerState_Num,
 		enModelUpAxisY);
 	m_firstPos = m_transform.position;
 	m_modelRender.Update();
 	
-	m_characterController.Init(charConScl.x, charConScl.y, m_transform.position);
+	m_characterController.Init(CHAR_CON_SCL.x, CHAR_CON_SCL.y, m_transform.position);
 }
 
 
@@ -291,7 +341,7 @@ void Player::ManageStateAndAnimation() {
 
 	//アニメーション再生
 	m_modelRender.SetAnimationSpeed(animationSpeed);
-	m_modelRender.PlayAnimation(m_state);
+	m_modelRender.PlayAnimation(static_cast<uint8_t>(m_state));
 }
 
 

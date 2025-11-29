@@ -2,10 +2,17 @@
 #include "Enemy.h"
 #include "ActorStatus.h"
 
+
+enum EnNormalEnemyState {
+	enNormalEnemyState_Walk,
+	enNormalEnemyState_Run,
+	enNormalEnemyState_Num
+};
+
 class NormalEnemy :  public Enemy{
 private:
 	NormalEnemyStatus m_normalEnemyStatus;
-
+	AnimationClip m_animationClip;
 
 public:
 	NormalEnemy();

@@ -6,7 +6,18 @@
 namespace  {
 	const Vector2 CHAR_CON_SCL = { 15.0f, 60.0f };
 	
-	const int ANIM_NUM = 1;
+
+	const std::string CHAR_TYPE = "enemy/normalEnemy/";
+	
+	
+	const std::string ANIM_FILE_NAME = "walk";
+	constexpr int ANIM_NUM = 1;
+	constexpr bool ANIM_LOOP_FLAG = true;
+	constexpr float ANIM_SPEED[EnNormalEnemyState::enNormalEnemyState_Num] = {
+		1.3f, 1.6f
+	};
+
+	const std::string MODEL_FILE_NAME = "normalEnemy";
 }
 
 
@@ -20,16 +31,34 @@ NormalEnemy::~NormalEnemy() {
 
 void NormalEnemy::LoadAnimationClips() {
 	//m_animationClips.resize(ANIM_NUM);
-	m_animationClips[0].Load("Assets/modelData/enemy/normalEnemy/walk.tka");
-	m_animationClips[0].SetLoopFlag(true);
+	//m_animationClips[0].Load("Assets/modelData/enemy/normalEnemy/walk.tka");
+	//m_animationClips[0].SetLoopFlag(true);
+
+	//m_animationClips.resize(static_cast<uint8_t>(ANIM_NUM));
+	//for (int i = 0; i < ANIM_NUM; i++) {
+	//	auto* animationClip = new AnimationClip();
+	//	animationClip->Load(nsAnim::GetFullPath(CHAR_TYPE, ANIM_FILE_NAME).c_str());
+	//	animationClip->SetLoopFlag(ANIM_LOOP_FLAG);
+	//	m_animationClips[i] = animationClip;
+	//}
+
+	m_animationClip.Load(nsAnim::GetFullPath(CHAR_TYPE, ANIM_FILE_NAME).c_str());
+	m_animationClip.SetLoopFlag(true);
 }
 
 
 void NormalEnemy::SetUpModel() {
 
-	m_modelRender.Init("Assets/modelData/enemy/normalEnemy/normalEnemy.tkm",
-	&m_animationClips[EnPlayerState::enPlayerState_Num],
-	ANIM_NUM, enModelUpAxisY);
+	//m_modelRender.Init(
+	//	nsModel::GetFullPath(CHAR_TYPE, MODEL_FILE_NAME).c_str(),
+	//	*m_animationClips.data(),
+	//	ANIM_NUM, enModelUpAxisZ);
+	//m_firstPos = m_transform.position;
+	//m_characterController.Init(CHAR_CON_SCL.x, CHAR_CON_SCL.y, m_transform.position);
+	m_modelRender.Init(
+		nsModel::GetFullPath(CHAR_TYPE, MODEL_FILE_NAME).c_str(),
+		&m_animationClip,
+		ANIM_NUM, enModelUpAxisZ);
 	m_firstPos = m_transform.position;
 	m_characterController.Init(CHAR_CON_SCL.x, CHAR_CON_SCL.y, m_transform.position);
 }
@@ -38,6 +67,7 @@ void NormalEnemy::SetUpModel() {
 bool NormalEnemy::Start() {
 	LoadAnimationClips();
 	SetUpModel();
+	GetOtherClassInfo();
 	DecideToMovePos();
 	
 	if (!m_player) {

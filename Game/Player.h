@@ -22,6 +22,7 @@ private:
 	EnMoveState m_moveState = EnMoveState::enMoveState_Walk;
 	EnJumpPower m_jumpPowerState = EnJumpPower::enJumpPower_First;
 	CollisionObject* m_atkCollision = nullptr;
+	AnimationClip m_animationClips[EnPlayerState::enPlayerState_Num];
 	PlayerStatus m_playerStatus;
 	bool m_isKillEnemy = false;
 	bool m_isNearCamera = false;

@@ -28,7 +28,7 @@ namespace {
 
 
 void UI::InitializeTimer() {
-	m_nowTime = nsUI::Timer::LIMIT;
+	m_nowTime = nsUI::nsTimer::LIMIT;
 	m_timer[0].nowTime = 0;
 	m_timer[1].nowTime = 0;
 	m_timer[2].nowTime = 3;
@@ -38,8 +38,8 @@ void UI::InitializeTimer() {
 		int fileNum = m_timer[i].nowTime;
 		UpdateSpriteInfo(
 			&m_timer[i].spriteRender
-			, nsUI::Timer::POS[i]
-			, nsUI::Timer::SCALE
+			, nsUI::nsTimer::POS[i]
+			, nsUI::nsTimer::SCALE
 			, GetNumberFilePath(fileNum));
 	}
 }
@@ -64,12 +64,12 @@ void UI::InitializeScore() {
 
 
 void UI::InitializeLife() {
-	for (int i = 0; i < nsUI::Life::MAX; i++) {
+	for (int i = 0; i < nsUI::nsLife::MAX; i++) {
 		m_life[i].isActive = true;
 
 		UpdateSpriteInfo(
 			&m_life[i].spriteRender
-			, nsUI::Life::POS[i]
+			, nsUI::nsLife::POS[i]
 			, Vector3::One
 			, GetLifeFilePath()
 		);
@@ -96,7 +96,7 @@ void UI::Update() {
 
 void UI::UpdateLife() {
 	int hp = m_player->GetStatus().GetLife();
-	for (int i = 0; i < nsUI::Life::MAX; i++) {
+	for (int i = 0; i < nsUI::nsLife::MAX; i++) {
 		if (i < hp) continue;
 		m_life[i].isActive = false;
 	}
@@ -107,26 +107,32 @@ void UI::MeasureNowTime() {
 	//一フレーム加算
 	m_gameTimer += g_gameTime->GetFrameDeltaTime();
 	//経ったフレーム分の時間を引く
-	m_nowTime = nsUI::Timer::LIMIT - m_gameTimer;
+	m_nowTime = nsUI::nsTimer::LIMIT - m_gameTimer;
 	//0秒以下にはしない
 	m_nowTime = max(0.0f, m_nowTime);
 
+	//計算したい桁数より上の桁の合計
 	int harderDigitTimeCalc = 0;
 
+	//桁数分繰り返す
 	for (int i = enTimer_Num - 1; i >= 0; i--) {
+		//一旦現在の数字を保存
 		int oldTime = m_timer[i].nowTime;
-		m_timer[i].nowTime = (m_nowTime - harderDigitTimeCalc) / nsUI::Timer::DIGIT[i];
-		harderDigitTimeCalc += m_timer[i].nowTime * nsUI::Timer::DIGIT[i];
-
+		//計算する桁数より上の桁の合計を引いてさらにそれぞれの
+		m_timer[i].nowTime = (m_nowTime - harderDigitTimeCalc) / nsUI::nsTimer::DIGIT[i];
+		//今計算している桁の数値を合計値に加算
+		harderDigitTimeCalc += m_timer[i].nowTime * nsUI::nsTimer::DIGIT[i];
+		//今計算中の桁の数値が変化したかどうか判定
+		//変化していなければ次の桁へ
 		if (oldTime == m_timer[i].nowTime) continue;
 
-		//時間が変化していたらスプライトを更新
+		//時間が変化しているのでスプライトを更新
 		int fileNum = m_timer[i].nowTime;
 
 		UpdateSpriteInfo(
 			&m_timer[i].spriteRender
-			, nsUI::Timer::POS[i]
-			, nsUI::Timer::SCALE
+			, nsUI::nsTimer::POS[i]
+			, nsUI::nsTimer::SCALE
 			, GetNumberFilePath(fileNum)
 		);
 	}

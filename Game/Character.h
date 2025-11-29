@@ -14,8 +14,8 @@ protected:
 	
 	Vector2 m_charConScl = Vector2::Zero;
 	CharacterController m_characterController;
-	//std::vector<AnimationClip> m_animationClips;
-	std::array<AnimationClip,4> m_animationClips;
+	//std::vector<AnimationClip*> m_animationClips;
+	//std::array<AnimationClip,4> m_animationClips;
 	//AnimationClip* m_animationClips;
 	CharacterStatus* m_status = nullptr;
 

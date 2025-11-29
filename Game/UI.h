@@ -22,7 +22,7 @@ enum EnScoreType {
 enum { enMaxScoreDigit = 6 };
 
 namespace nsUI {
-	namespace Life {
+	namespace nsLife {
 		constexpr int MAX = 5;
 
 		const Vector3 POS[MAX] = {
@@ -36,7 +36,7 @@ namespace nsUI {
 	}
 
 
-	namespace Timer {
+	namespace nsTimer {
 		constexpr int ONE_SECOND = 1;			//1	 •b
 		constexpr int TEN_SECOND = 10;			//10 •b
 		constexpr int HUN_SECOND = 100;			//100•b
@@ -131,7 +131,7 @@ class Player;
 
 class UI : public Actor{
 private:
-	std::array<Life, nsUI::Life::MAX> m_life;
+	std::array<Life, nsUI::nsLife::MAX> m_life;
 	std::array<Timer, enTimer_Num> m_timer;
 	std::array<Score, enMaxScoreDigit> m_score;
 	float m_gameTimer = 0.0f;
@@ -147,7 +147,7 @@ public:
 
 	UI() : 
 		m_gameTimer(0.0f)
-		, m_nowTime(nsUI::Timer::LIMIT)
+		, m_nowTime(nsUI::nsTimer::LIMIT)
 		,m_nowScore(0)
 	{}
 
@@ -157,7 +157,7 @@ public:
 	bool Start()override;
 	void Update()override;
 	void Render(RenderContext& rc)override {
-		for (int i = 0; i < nsUI::Life::MAX; i++) {
+		for (int i = 0; i < nsUI::nsLife::MAX; i++) {
 			if (m_life[i].isActive) m_life[i].spriteRender.Draw(rc);
 		}
 		for (int i = 0; i < enTimer_Num; i++) {

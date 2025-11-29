@@ -75,6 +75,7 @@ PlayerStatus::PlayerStatus() :
 	,m_standingTime(0.0f)
 
 { 
+	m_life = 3;
 }
 
 

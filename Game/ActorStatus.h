@@ -34,7 +34,7 @@ public:
 
 
 class CharacterStatus : public ActorStatus {
-private:
+protected:
 	int m_maxLife;					//!	最大ライフ
 	int m_life;						//!	現在のライフ
 	std::array<float, EnMoveState::enMoveState_Num> m_moveSpeed;	//!	移動速度の配列
